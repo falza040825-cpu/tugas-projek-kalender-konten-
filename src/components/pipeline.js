@@ -1,14 +1,17 @@
 /**
- * Alur Produksi (Pipeline) — StudioFlow Fase 2
- * 8 tahap produksi konten · Ubah stage via dropdown/tombol · Filter platform
+ * Alur Produksi (Pipeline) — StudioFlow Fase 2 & QA Fase 4
+ * 8 tahap produksi konten · Ubah stage via tombol · Filter platform · Tambah item lokal
  */
 
 import { pipelineStages, pipelineItems } from '../data/mockData.js';
+import { openNewContentModal } from './contentModal.js';
+import { escapeHtml } from '../utils/helpers.js';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+let pipelineState = {
+  filterPlatform: 'Semua',
+};
 
+const PLATFORMS = ['Semua', 'Instagram', 'TikTok', 'YouTube'];
 const STAGE_IDS = pipelineStages.map(s => s.id);
 
 function stageOf(id) {
@@ -32,6 +35,11 @@ function nextStage(stageId) {
   return idx < STAGE_IDS.length - 1 ? STAGE_IDS[idx + 1] : null;
 }
 
+function applyPlatformFilter(items) {
+  if (pipelineState.filterPlatform === 'Semua') return items;
+  return items.filter(i => i.platform === pipelineState.filterPlatform);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Render kartu konten pipeline
 // ─────────────────────────────────────────────────────────────────────────────
@@ -41,22 +49,22 @@ function renderPipelineCard(item) {
   const next = nextStage(item.stage);
 
   return `
-    <div class="pip-card" data-pip-id="${item.id}" tabindex="0">
+    <div class="pip-card" data-pip-id="${escapeHtml(item.id)}" tabindex="0">
       <div class="pip-card-header">
-        <span class="platform-chip ${platformColor(item.platform)}">${item.platform}</span>
-        <span class="pip-cat">${item.category}</span>
+        <span class="platform-chip ${platformColor(item.platform)}">${escapeHtml(item.platform)}</span>
+        <span class="pip-cat">${escapeHtml(item.category)}</span>
       </div>
-      <div class="pip-card-title">${item.title}</div>
+      <div class="pip-card-title">${escapeHtml(item.title)}</div>
       <div class="pip-card-footer">
         <span class="assignee-chip">
-          <span class="mini-avatar">${item.initials}</span>
-          <span>${item.owner.split(' ')[0]}</span>
+          <span class="mini-avatar">${escapeHtml(item.initials)}</span>
+          <span>${escapeHtml(item.owner.split(' ')[0])}</span>
         </span>
-        <span class="pip-pub-date">↗ ${item.pubDate}</span>
+        <span class="pip-pub-date">↗ ${escapeHtml(item.pubDate)}</span>
       </div>
       <div class="pip-card-controls">
-        ${prev ? `<button class="pip-move-btn prev" data-pip-id="${item.id}" data-pip-dir="prev" title="Kembalikan ke ${stageOf(prev)?.label}" aria-label="Pindah ke tahap sebelumnya">←</button>` : '<span></span>'}
-        ${next ? `<button class="pip-move-btn next" data-pip-id="${item.id}" data-pip-dir="next" title="Maju ke ${stageOf(next)?.label}" aria-label="Pindah ke tahap berikutnya">→</button>` : '<span></span>'}
+        ${prev ? `<button type="button" class="pip-move-btn prev" data-pip-id="${escapeHtml(item.id)}" data-pip-dir="prev" title="Kembalikan ke ${escapeHtml(stageOf(prev)?.label)}" aria-label="Pindah ${escapeHtml(item.title)} ke tahap sebelumnya">←</button>` : '<span></span>'}
+        ${next ? `<button type="button" class="pip-move-btn next" data-pip-id="${escapeHtml(item.id)}" data-pip-dir="next" title="Maju ke ${escapeHtml(stageOf(next)?.label)}" aria-label="Pindah ${escapeHtml(item.title)} ke tahap berikutnya">→</button>` : '<span></span>'}
       </div>
     </div>
   `;
@@ -125,7 +133,7 @@ function renderPipelineStats(items) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function renderPipeline() {
-  const items = pipelineItems; // mutable array dari mockData
+  const items = applyPlatformFilter(pipelineItems);
 
   return `
     <div class="page-heading">
@@ -134,11 +142,28 @@ export function renderPipeline() {
         <h1>Alur Produksi</h1>
         <p>Status pengerjaan konten dalam 8 tahap produksi · Gunakan tombol ← → untuk memindahkan tahap</p>
       </div>
-      <button class="btn-primary" id="btn-pip-new"><span>＋</span> Tambah Item (Demo)</button>
+      <button type="button" class="btn-primary" id="btn-pip-new"><span>＋</span> Tambah Item (Demo)</button>
     </div>
 
     <!-- Stats bar -->
     ${renderPipelineStats(items)}
+
+    <!-- Platform Filter -->
+    <div class="panel" style="margin-bottom:20px; padding:14px 20px;">
+      <div class="filter-row" style="align-items:center;justify-content:space-between;">
+        <div class="filter-group">
+          <span class="filter-label">Filter Platform</span>
+          <div class="filter-pills">
+            ${PLATFORMS.map(p => `
+              <button type="button" class="filter-pill ${p === pipelineState.filterPlatform ? 'active' : ''}" data-pip-platform="${p}">
+                ${p}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+        <span class="filter-summary-chip">Menampilkan ${items.length} dari ${pipelineItems.length} konten</span>
+      </div>
+    </div>
 
     <!-- Pipeline board -->
     <div class="pip-board-wrapper">
@@ -150,10 +175,10 @@ export function renderPipeline() {
     <div class="demo-banner" style="margin-top:24px;">
       <span class="demo-banner-icon">✳</span>
       <div class="demo-banner-content">
-        <strong>Alur Produksi — Fase 2</strong>
-        <p>Perpindahan tahap bekerja pada sesi UI (data dummy lokal). Tidak ada persistensi backend.</p>
+        <strong>Alur Produksi — Simulasi Lokal</strong>
+        <p>Perpindahan tahap dan penambahan item bekerja pada sesi UI (data dummy lokal). Tidak ada persistensi backend.</p>
       </div>
-      <span class="demo-badge">FASE 2</span>
+      <span class="demo-badge">SIMULASI</span>
     </div>
   `;
 }
@@ -163,7 +188,13 @@ export function renderPipeline() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function attachPipelineEvents(renderApp, showToast) {
-  // Tombol pindah stage
+  document.querySelectorAll('[data-pip-platform]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pipelineState.filterPlatform = btn.dataset.pipPlatform;
+      renderApp();
+    });
+  });
+
   document.querySelectorAll('.pip-move-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -183,8 +214,7 @@ export function attachPipelineEvents(renderApp, showToast) {
     });
   });
 
-  // Tambah item (demo)
   document.querySelector('#btn-pip-new')?.addEventListener('click', () => {
-    showToast('Tambah item pipeline: simulasi UI saja. Backend diperlukan untuk persistensi.');
+    openNewContentModal(renderApp, showToast);
   });
 }

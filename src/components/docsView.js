@@ -15,7 +15,7 @@ export function renderDocsView(activeDocKey = 'PRD') {
       </button>
     </div>
 
-    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start;">
+    <div class="docs-layout">
       <!-- SOT Select List -->
       <div class="panel" style="padding: 0; overflow: hidden;">
         <div style="padding: 18px 20px 12px; border-bottom: 1px solid var(--color-border);">
@@ -35,7 +35,7 @@ export function renderDocsView(activeDocKey = 'PRD') {
                 border: 0;
                 border-bottom: 1px solid var(--color-border-subtle);
                 background: ${doc.id === activeDocKey ? 'var(--color-surface-subtle)' : 'transparent'};
-                border-left: 3px solid ${doc.id === activeDocKey ? 'var(--color-sage-ink)' : 'transparent'};
+                border-left: 3px solid ${doc.id === activeDocKey ? 'var(--color-red)' : 'transparent'};
                 cursor: pointer;
               "
             >

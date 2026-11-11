@@ -15,11 +15,11 @@ export function renderSidebar(currentRoute) {
       </div>
 
       <div class="sidebar-section-label">WORKSPACE</div>
-      <div class="workspace-select">
+      <button type="button" class="workspace-select" id="btn-workspace-select" aria-label="Workspace aktif: ${currentUser.workspace} (mode demo)" style="width:100%;">
         <span class="workspace-dot"></span>
         <span>${currentUser.workspace}</span>
         <span class="chevron">⌄</span>
-      </div>
+      </button>
 
       <div class="sidebar-section-label">MENU UTAMA</div>
       <nav class="nav-menu" aria-label="Menu utama">
@@ -64,7 +64,7 @@ export function renderSidebar(currentRoute) {
           <div class="user-avatar" aria-hidden="true">${currentUser.avatar}</div>
           <div class="user-info">
             <strong>${currentUser.name}</strong>
-            <small>${currentUser.role}</small>
+            <small>${currentUser.role} (Simulasi)</small>
           </div>
           <span class="dots" aria-hidden="true">• • •</span>
         </div>

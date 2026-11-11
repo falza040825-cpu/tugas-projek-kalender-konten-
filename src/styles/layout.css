@@ -17,6 +17,8 @@ body {
   overflow-x: hidden;
 }
 
+/* Google Fonts loaded via tokens.css */
+
 button, input, select, textarea {
   font-family: inherit;
   color: inherit;
@@ -37,14 +39,15 @@ button {
 /* Sidebar Styling */
 .sidebar {
   width: 256px;
-  background-color: var(--color-surface-elevated);
-  border-right: 1px solid var(--color-border);
+  background: var(--grad-sidebar);
+  border-right: none;
   padding: 24px 16px 20px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   transition: transform var(--transition-normal), width var(--transition-normal);
   z-index: 20;
+  box-shadow: 4px 0 24px rgba(74, 13, 18, 0.20);
 }
 
 .brand {
@@ -58,19 +61,20 @@ button {
   width: 38px;
   height: 38px;
   border-radius: var(--radius-control);
-  background-color: var(--color-ink);
-  color: var(--color-canvas);
+  background: var(--grad-gold);
+  color: #4A0D12;
   display: grid;
   place-items: center;
   font-weight: 800;
   font-size: 22px;
+  box-shadow: 0 2px 12px rgba(201, 147, 18, 0.4);
 }
 
 .brand-info strong {
   display: block;
   font-size: 17px;
   letter-spacing: -0.5px;
-  color: var(--color-ink);
+  color: #FFFFFF;
   line-height: 1.2;
 }
 
@@ -78,7 +82,7 @@ button {
   display: block;
   font-size: 9px;
   letter-spacing: 1.5px;
-  color: var(--color-ink-muted);
+  color: rgba(255,255,255,0.72);
   font-weight: 700;
   margin-top: 2px;
 }
@@ -87,15 +91,15 @@ button {
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1.4px;
-  color: var(--color-ink-muted);
+  color: rgba(255,255,255,0.68);
   padding: 0 12px 8px;
   text-transform: uppercase;
 }
 
 .workspace-select {
   height: 42px;
-  border: 1px solid var(--color-border);
-  background-color: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.12);
+  background-color: rgba(255,255,255,0.07);
   border-radius: var(--radius-control);
   display: flex;
   align-items: center;
@@ -103,20 +107,20 @@ button {
   padding: 0 12px;
   font-size: 13px;
   font-weight: 600;
+  color: #FFFFFF;
   margin-bottom: 24px;
-  box-shadow: var(--shadow-sm);
 }
 
 .workspace-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--color-sage-ink);
+  background: var(--grad-gold);
 }
 
 .workspace-select .chevron {
   margin-left: auto;
-  color: var(--color-ink-muted);
+  color: rgba(255,255,255,0.72);
   font-size: 11px;
 }
 
@@ -129,7 +133,7 @@ button {
 .nav-item {
   border: 0;
   background: transparent;
-  color: var(--color-ink-secondary);
+  color: rgba(255,255,255,0.78);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -143,14 +147,15 @@ button {
 }
 
 .nav-item:hover {
-  background-color: var(--color-surface-subtle);
-  color: var(--color-ink);
+  background-color: rgba(255,255,255,0.08);
+  color: #FFFFFF;
 }
 
 .nav-item.active {
-  background-color: var(--color-sage);
-  color: var(--color-sage-ink);
+  background: rgba(220, 38, 38, 0.36);
+  color: #FFFFFF;
   font-weight: 700;
+  border-left: 3px solid var(--color-gold-mid);
 }
 
 .nav-icon {
@@ -163,8 +168,8 @@ button {
 .nav-badge {
   margin-left: auto;
   border-radius: var(--radius-badge);
-  background-color: var(--color-blush);
-  color: var(--color-blush-ink);
+  background: var(--grad-gold);
+  color: #4A0D12;
   padding: 2px 7px;
   font-size: 10px;
   font-weight: 700;
@@ -176,8 +181,8 @@ button {
 }
 
 .sot-card {
-  border: 1px solid var(--color-border);
-  background-color: var(--color-taupe-bg);
+  border: 1px solid rgba(255,255,255,0.12);
+  background-color: rgba(255,255,255,0.07);
   border-radius: var(--radius-panel);
   padding: 14px;
   margin-bottom: 16px;
@@ -187,38 +192,38 @@ button {
   width: 28px;
   height: 28px;
   border-radius: var(--radius-badge);
-  background-color: var(--color-sand);
+  background: var(--grad-gold);
   display: grid;
   place-items: center;
-  color: var(--color-taupe-ink);
+  color: #4A0D12;
   font-size: 14px;
   margin-bottom: 8px;
 }
 
 .sot-card strong {
   font-size: 12px;
-  color: var(--color-ink);
+  color: rgba(255,255,255,0.90);
   display: block;
 }
 
 .sot-card p {
   font-size: 11px;
   line-height: 1.5;
-  color: var(--color-ink-secondary);
+  color: rgba(255,255,255,0.75);
   margin: 4px 0 10px;
 }
 
 .sot-card button {
   font-size: 11px;
   font-weight: 700;
-  color: var(--color-sage-ink);
+  color: var(--color-gold-mid);
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .user-profile {
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(255,255,255,0.12);
   padding-top: 14px;
   display: flex;
   align-items: center;
@@ -229,30 +234,31 @@ button {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: var(--color-sand);
-  color: var(--color-sand-ink);
+  background: var(--grad-gold);
+  color: #4A0D12;
   display: grid;
   place-items: center;
   font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(201, 147, 18, 0.35);
 }
 
 .user-info strong {
   font-size: 12px;
   display: block;
-  color: var(--color-ink);
+  color: rgba(255,255,255,0.90);
   line-height: 1.2;
 }
 
 .user-info small {
   font-size: 10px;
-  color: var(--color-ink-muted);
+  color: rgba(255,255,255,0.72);
 }
 
 .user-profile .dots {
   margin-left: auto;
-  color: var(--color-ink-muted);
+  color: rgba(255,255,255,0.68);
   font-size: 14px;
 }
 
@@ -272,11 +278,12 @@ button {
   justify-content: space-between;
   padding: 0 32px;
   border-bottom: 1px solid var(--color-border);
-  background-color: rgba(250, 249, 247, 0.85);
-  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 1px 12px rgba(153, 27, 27, 0.06);
 }
 
 .topbar-left {
@@ -318,6 +325,83 @@ button {
   gap: 14px;
 }
 
+.topbar-search-wrap {
+  position: relative;
+}
+
+.global-search-results {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(360px, 85vw);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  z-index: 40;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.global-search-results.open {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.global-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-align: left;
+  width: 100%;
+  transition: background var(--transition-fast);
+}
+
+.global-search-item:hover {
+  background: var(--color-surface-subtle);
+}
+
+.global-search-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-red-bg);
+  color: var(--color-red-ink);
+  flex-shrink: 0;
+}
+
+.global-search-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.global-search-text strong {
+  font-size: 12px;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.global-search-text small {
+  font-size: 10px;
+  color: var(--color-ink-muted);
+}
+
+.global-search-empty {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  text-align: center;
+}
+
 .topbar-search {
   height: 38px;
   width: 240px;
@@ -355,7 +439,7 @@ button {
   border-radius: var(--radius-control);
   width: 38px;
   height: 38px;
-  color: var(--color-ink-secondary);
+  color: var(--color-red);
   display: grid;
   place-items: center;
   position: relative;
@@ -363,7 +447,8 @@ button {
 }
 
 .icon-button:hover {
-  background-color: var(--color-surface-subtle);
+  background-color: var(--color-red-bg);
+  color: var(--color-red-dark);
 }
 
 .icon-button .badge-dot {
@@ -373,7 +458,7 @@ button {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--color-blush-ink);
+  background: var(--grad-gold);
 }
 
 .role-badge-pill {
@@ -381,9 +466,10 @@ button {
   font-weight: 600;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
-  background-color: var(--color-taupe-bg);
-  color: var(--color-taupe-ink);
-  border: 1px solid var(--color-border);
+  background: var(--grad-gold);
+  color: #4A0D12;
+  border: none;
+  box-shadow: 0 1px 6px rgba(201, 147, 18, 0.28);
 }
 
 /* Page Content Container */
@@ -435,6 +521,7 @@ button {
     height: 60px;
     padding: 0 16px;
   }
+  .topbar-search-wrap,
   .topbar-search {
     display: none;
   }

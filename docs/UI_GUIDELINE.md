@@ -1,23 +1,25 @@
 # UI Guideline — StudioFlow
 
-**Status:** Draft untuk persetujuan pengguna. Jangan memperluas scope visual tanpa approval.
+**Status:** Diselaraskan ke tema **Merah · Gold · Putih** sesuai persetujuan pengguna. Jangan memperluas scope fitur/backend tanpa approval.
 
 ## 1. Arah visual
-Modern futuristic SaaS yang tenang dan profesional: permukaan off-white, silver, abu-abu lembut, cokelat muda/taupe, dengan aksen sage dan lavender pastel. Hindari neon keras, gradien berlebihan, dan kepadatan tabel yang melelahkan.
+SaaS operasional konten modern dengan dominasi **Merah Marun/Crimson & Gold** di atas permukaan **Putih / Warm Off-White** yang bersih, kontras tinggi, dan profesional. Sidebar gelap merah marun memberi jangkar navigasi, sedangkan area kerja putih gading menjaga tabel, kalender, dan kartu tetap ringan serta mudah dipindai tanpa neon atau kepadatan berlebihan.
 
 ## 2. Design tokens
-- Canvas: `#F4F2EE`; surface: `#FFFFFF`; elevated: `#FAF9F7`.
-- Ink: `#252723`; secondary: `#777970`; border: `#E7E4DE`.
-- Taupe: `#B9A895`; sage: `#DCE8DE`; lavender: `#E8E3F1`; sand: `#EFE4D6`; blush: `#F1DEDA`.
-- Radius: kartu 18–22px; kontrol 10–12px; pill 999px.
-- Spacing: basis 4px; area utama 28–32px; antar kartu 16–20px.
-- Typography: system sans-serif untuk scaffold, hirarki jelas; heading ringkas, body 14–15px.
+- Canvas: `#FAF6F4`; surface: `#FFFFFF`; elevated: `#FFFBF8`; subtle: `#FDF4F2`.
+- Ink: `#2A1215`; secondary: `#6B4A4D`; muted: `#826063`; border: `#EAD8D5`.
+- Primary Red: `#B91C1C` (crimson), dark `#88131D`, mid `#DC2626`, bg `#FEF2F2`, ink `#991B1B`.
+- Gold: `#C99312`, dark `#926806`, mid `#F5B82E`, light `#FEF3C7`, bg `#FFFBEB`, ink `#784F05`.
+- Aksen semantik: Gold hangat (`#FDE68A` / `#784F05`), Merah lembut (`#FECACA` / `#991B1B`), Champagne gold (`#FCD34D` / `#6E4704`), Merah urgensi (`#FCA5A5` / `#7F1D1D`), Emas-perunggu (`#E7D3B8` / `#6E4E2E`).
+- Radius: kartu `20px`; panel `18px`; kontrol `11px`; badge `8px`; pill `999px`.
+- Spacing: basis `4px`; area utama `28–32px`; antar kartu `16–20px`.
+- Typography: `'Inter'` / system sans-serif, hirarki jelas; heading ringkas, body `14px`.
 
 ## 3. Kerangka aplikasi
-- Sidebar kiri: brand, menu utama, bagian workspace, profil dan role simulasi.
-- Topbar: breadcrumb/judul halaman, pencarian demo, notifikasi, tombol aksi utama.
-- Konten: grid responsif dengan statistik, grafik mini, daftar aktivitas, tabel/list.
-- Navigasi aktif menggunakan surface lembut dan aksen tipis; hindari warna penuh yang dominan.
+- Sidebar kiri (`#4A0D12` → `#7F1D1D`): brand mark gold, pemilih workspace simulasi, menu utama & badge gold, kartu SOT, profil dan role simulasi.
+- Topbar: breadcrumb/judul halaman, pencarian cepat (`Cmd/Ctrl + K`), tombol notifikasi + badge dot gold, badge role simulasi gold, tombol toggle drawer mobile.
+- Konten: grid responsif dengan kartu statistik, grafik batang Merah/Gold, jadwal terdekat, aktivitas, tabel/kanvan.
+- Navigasi aktif menggunakan latar merah transparan dengan garis batas kiri gold (`--color-gold-mid`).
 
 ## 4. Komponen
 - **Stat card:** label, angka besar, delta/catatan pendek, ikon sederhana.

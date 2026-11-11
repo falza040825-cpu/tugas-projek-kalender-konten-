@@ -4,12 +4,14 @@
  * Hanya untuk kebutuhan simulasi UI front-end (tanpa backend / API)
  */
 
-export const currentUser = {
+export let currentUser = {
   name: 'Farah Aulia',
-  role: 'Administrator',
+  role: 'Admin',
   avatar: 'FA',
   workspace: 'Tim Kreatif SGQ'
 };
+
+export const availableRoles = ['Admin', 'Koordinator', 'Tim Kreatif', 'Reviewer', 'Publikasi'];
 
 export const statsOverview = {
   planned: { value: 48, delta: '+12.8%', label: 'Konten direncanakan', kind: 'lavender', icon: '▤' },
@@ -32,7 +34,7 @@ export const priorityTasks = [
   { id: 'tsk-4', title: 'Review konten mingguan', assignee: 'Farah Aulia', initials: 'FA', deadline: '11 Okt', status: 'Menunggu', statusClass: 'st-wait' }
 ];
 
-export const recentActivities = [
+export let recentActivities = [
   { id: 'act-1', user: 'Nadia Putri', initials: 'NP', action: 'mengunggah desain baru', target: 'Carousel edukasi', time: '12 menit lalu', avatarClass: 'av-sage' },
   { id: 'act-2', user: 'Raka Pratama', initials: 'RP', action: 'mengirim revisi', target: 'Video program baru', time: '38 menit lalu', avatarClass: 'av-lav' },
   { id: 'act-3', user: 'Farah Aulia', initials: 'FA', action: 'menyetujui caption', target: 'Konten informasi', time: '1 jam lalu', avatarClass: 'av-sand' }
@@ -58,13 +60,13 @@ export const sotDocs = {
     filename: 'UI_GUIDELINE.md',
     title: 'UI Guideline — Design System',
     version: 'v0.1',
-    status: 'Draft SOT',
+    status: 'Merah · Gold',
     subtitle: 'Arah visual, design tokens, komponen UI, interaksi, dan aksesibilitas.',
     bullets: [
-      'Palet pastel silver, abu-abu lembut, taupe, sage, dan lavender.',
-      'Canvas #F4F2EE, Surface #FFFFFF, Elevated #FAF9F7, Ink #252723.',
-      'Radius 18-22px (kartu), 10-12px (kontrol), 999px (pill).',
-      'Status selalu memakai teks dan indikator warna, kontras dan aksesibel.'
+      'Palet tema Merah (#B91C1C / #4A0D12), Gold (#C99312 / #F5B82E), dan Putih (#FFFFFF).',
+      'Canvas #FAF6F4, Surface #FFFFFF, Elevated #FFFBF8, Ink #2A1215.',
+      'Radius 18-20px (kartu/panel), 11px (kontrol), 999px (pill).',
+      'Status selalu memakai teks dan indikator warna dengan kontras WCAG AA.'
     ]
   },
   PLAN: {

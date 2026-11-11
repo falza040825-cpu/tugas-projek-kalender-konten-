@@ -2,10 +2,10 @@
 
 > Aplikasi web internal untuk mengelola perencanaan, kalender, alur produksi, tugas, aset, notifikasi, dan evaluasi konten digital dalam satu ruang kerja.
 
-![Status](https://img.shields.io/badge/status-prototype-orange)
-![Versi](https://img.shields.io/badge/versi-0.1.0-blue)
-![Stack](https://img.shields.io/badge/stack-Vite%20%2B%20Vanilla%20JS-purple)
-![Bahasa](https://img.shields.io/badge/bahasa-Indonesia-green)
+![Status](https://img.shields.io/badge/status-prototype-red)
+![Tema](https://img.shields.io/badge/tema-Merah%20%26%20Gold-B91C1C)
+![Stack](https://img.shields.io/badge/stack-Vite%20%2B%20Vanilla%20JS-C99312)
+![Bahasa](https://img.shields.io/badge/bahasa-Indonesia-88131D)
 
 ---
 
@@ -41,10 +41,11 @@ sot-content-studio/
 │   ├── UI_GUIDELINE.md         # Panduan desain & komponen
 │   └── IMPLEMENTATION_PLAN.md  # Rencana implementasi per fase
 ├── src/
-│   ├── components/             # Komponen UI (calendar, pipeline, tasks, dst.)
+│   ├── components/             # Komponen UI (calendar, pipeline, tasks, contentModal, dst.)
 │   ├── data/                   # Data dummy (mockData.js)
-│   ├── styles/                 # Token CSS, layout, komponen
-│   └── main.js                 # Entry point aplikasi
+│   ├── styles/                 # Token CSS (Merah · Gold · Putih), layout, komponen
+│   ├── utils/                  # Helper umum (escapeHtml, format tanggal)
+│   └── main.js                 # Entry point aplikasi & pencarian global
 ├── index.html
 ├── AGENTS.md                   # Kontrak kerja agen AI
 ├── PROMPT_EXECUTION.md         # Log eksekusi prompt
@@ -120,11 +121,12 @@ Ide/Perencanaan → Naskah/Caption → Desain/Video → Editing
 
 ## 📋 Status Pengembangan
 
-- [x] Fase 1 — Foundation & Design System
-- [x] Fase 2 — Komponen UI utama
-- [x] Fase 3 — Integrasi data dummy
-- [ ] Fase 4 — Backend & autentikasi *(menunggu persetujuan)*
-- [ ] Fase 5 — Integrasi platform & ekspor *(menunggu persetujuan)*
+- [x] Fase 0 — Persetujuan SOT
+- [x] Fase 1 — Fondasi front-end & Design System (**Merah · Gold · Putih**)
+- [x] Fase 2 — Halaman operasional (Kalender, Pipeline Produksi, Manajemen Tugas)
+- [x] Fase 3 — Workspace pendukung (Pengguna & Akses, Aset, Notifikasi, Laporan)
+- [x] Fase 4 — QA visual, aksesibilitas, responsif & sinkronisasi dokumen prototipe
+- [ ] Fase lanjutan (pasca-prototipe): Backend, autentikasi nyata, upload server, & ekspor PDF/CSV *(menunggu keputusan & persetujuan terpisah)*
 
 ---
 

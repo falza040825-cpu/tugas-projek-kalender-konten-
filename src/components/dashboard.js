@@ -1,4 +1,5 @@
 import { statsOverview, upcomingSchedules, priorityTasks, recentActivities, currentUser } from '../data/mockData.js';
+import { escapeHtml } from '../utils/helpers.js';
 
 function getTodayLabel() {
   const now = new Date();
@@ -86,7 +87,7 @@ export function renderDashboard() {
         <div class="chart-container">
           <div class="chart-header">
             <div>
-              <strong>48 <small style="font-size: 12px; font-weight: normal; color: var(--color-ink-muted);">konten total</small></strong>
+              <strong>${statsOverview.planned.value} <small style="font-size: 12px; font-weight: normal; color: var(--color-ink-muted);">konten total</small></strong>
             </div>
             <div class="chart-legend">
               <span><i class="lg-done"></i>Selesai</span>
@@ -123,14 +124,14 @@ export function renderDashboard() {
           ${upcomingSchedules.map(sch => `
             <div class="schedule-item">
               <div class="date-tile ${sch.color}">
-                <b>${sch.date.split(' ')[0]}</b>
-                <small>${sch.date.split(' ')[1]}</small>
+                <b>${escapeHtml(sch.date.split(' ')[0])}</b>
+                <small>${escapeHtml(sch.date.split(' ')[1] || '')}</small>
               </div>
               <div class="schedule-info">
-                <strong>${sch.title}</strong>
-                <span>${sch.platform} · ${sch.category}</span>
+                <strong>${escapeHtml(sch.title)}</strong>
+                <span>${escapeHtml(sch.platform)} · ${escapeHtml(sch.category)}</span>
               </div>
-              <div class="schedule-time">${sch.time}</div>
+              <div class="schedule-time">${escapeHtml(sch.time)}</div>
             </div>
           `).join('')}
         </div>
@@ -192,10 +193,10 @@ export function renderDashboard() {
         <div class="activity-list">
           ${recentActivities.map(act => `
             <div class="activity-item">
-              <div class="activity-avatar ${act.avatarClass}">${act.initials}</div>
+              <div class="activity-avatar ${act.avatarClass}">${escapeHtml(act.initials)}</div>
               <div class="activity-text">
-                <p><strong>${act.user}</strong> ${act.action}</p>
-                <small>${act.target} · ${act.time}</small>
+                <p><strong>${escapeHtml(act.user)}</strong> ${escapeHtml(act.action)}</p>
+                <small>${escapeHtml(act.target)} · ${escapeHtml(act.time)}</small>
               </div>
             </div>
           `).join('')}

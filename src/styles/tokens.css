@@ -1,69 +1,99 @@
-/* Design Tokens - StudioFlow SOT UI Guideline */
+/* Design Tokens - StudioFlow | Tema: Merah · Gold · Putih */
 
 :root {
-  /* Color Palette - Canvas & Surfaces */
-  --color-canvas: #F4F2EE;
+  /* ── Canvas & Surfaces ── */
+  --color-canvas: #FAF6F4;
   --color-surface: #FFFFFF;
-  --color-surface-elevated: #FAF9F7;
-  --color-surface-subtle: #F6F5F1;
-  
-  /* Typography & Lines */
-  --color-ink: #252723;
-  --color-ink-secondary: #777970;
-  --color-ink-muted: #96978F;
-  --color-border: #E7E4DE;
-  --color-border-subtle: #F0EEE9;
-  
-  /* Pastel Accent Tokens */
-  --color-taupe: #B9A895;
-  --color-taupe-bg: #F4F1EB;
-  --color-taupe-ink: #786C5B;
-  
-  --color-sage: #DCE8DE;
-  --color-sage-bg: #E8F0E9;
-  --color-sage-ink: #4F6854;
-  
-  --color-lavender: #E8E3F1;
-  --color-lavender-bg: #F0EDF6;
-  --color-lavender-ink: #6B5E87;
-  
-  --color-sand: #EFE4D6;
-  --color-sand-bg: #F6EFE6;
-  --color-sand-ink: #7D664F;
-  
-  --color-blush: #F1DEDA;
-  --color-blush-bg: #F7EAE7;
-  --color-blush-ink: #94534B;
-  
-  /* Border Radius */
-  --radius-card: 20px;
-  --radius-panel: 18px;
+  --color-surface-elevated: #FFFBF8;
+  --color-surface-subtle: #FDF4F2;
+
+  /* ── Ink / Typography ── */
+  --color-ink: #2A1215;
+  --color-ink-secondary: #6B4A4D;
+  --color-ink-muted: #826063;
+  --color-border: #EAD8D5;
+  --color-border-subtle: #F4E9E7;
+
+  /* ── Primary Red (Crimson / Ruby) ── */
+  --color-red:        #B91C1C;
+  --color-red-dark:   #88131D;
+  --color-red-light:  #FEE2E2;
+  --color-red-mid:    #DC2626;
+  --color-red-bg:     #FEF2F2;
+  --color-red-ink:    #991B1B;
+
+  /* ── Gold / Amber ── */
+  --color-gold:       #C99312;
+  --color-gold-dark:  #926806;
+  --color-gold-light: #FEF3C7;
+  --color-gold-mid:   #F5B82E;
+  --color-gold-bg:    #FFFBEB;
+  --color-gold-ink:   #784F05;
+
+  /* ── Semantic Accent Tokens (Merah & Gold Palette) ── */
+  /* Sage → Gold hangat */
+  --color-sage:       #FDE68A;
+  --color-sage-bg:    #FFFBEB;
+  --color-sage-ink:   #784F05;
+
+  /* Lavender → Merah lembut */
+  --color-lavender:   #FECACA;
+  --color-lavender-bg:#FEF2F2;
+  --color-lavender-ink:#991B1B;
+
+  /* Sand → Champagne Gold */
+  --color-sand:       #FCD34D;
+  --color-sand-bg:    #FEF7E0;
+  --color-sand-ink:   #6E4704;
+
+  /* Blush → Merah urgensi / terlambat */
+  --color-blush:      #FCA5A5;
+  --color-blush-bg:   #FEE2E2;
+  --color-blush-ink:  #7F1D1D;
+
+  /* Taupe → Emas-perunggu lembut */
+  --color-taupe:      #E7D3B8;
+  --color-taupe-bg:   #FAF3E8;
+  --color-taupe-ink:  #6E4E2E;
+
+  /* ── Border Radius ── */
+  --radius-card:    20px;
+  --radius-panel:   18px;
   --radius-control: 11px;
-  --radius-badge: 8px;
-  --radius-pill: 999px;
-  
-  /* Spacing */
+  --radius-badge:   8px;
+  --radius-pill:    999px;
+
+  /* ── Spacing ── */
   --space-unit: 4px;
-  --space-xs: 8px;
-  --space-sm: 12px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  
-  /* Typography Scale */
-  --font-family-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-size-xs: 11px;
-  --font-size-sm: 13px;
-  --font-size-body: 14px;
-  --font-size-md: 15px;
-  --font-size-lg: 18px;
-  --font-size-xl: 22px;
+  --space-xs:   8px;
+  --space-sm:   12px;
+  --space-md:   16px;
+  --space-lg:   24px;
+  --space-xl:   32px;
+
+  /* ── Typography ── */
+  --font-family-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-size-xs:  11px;
+  --font-size-sm:  13px;
+  --font-size-body:14px;
+  --font-size-md:  15px;
+  --font-size-lg:  18px;
+  --font-size-xl:  22px;
   --font-size-2xl: 28px;
-  
-  /* Shadows & Transitions */
-  --shadow-sm: 0 2px 8px rgba(37, 39, 35, 0.04);
-  --shadow-md: 0 8px 24px rgba(37, 39, 35, 0.06);
-  --shadow-modal: 0 20px 60px rgba(37, 39, 35, 0.12);
-  --transition-fast: 0.15s ease;
+
+  /* ── Shadows ── */
+  --shadow-sm:    0 2px 8px rgba(153, 27, 27, 0.06);
+  --shadow-md:    0 8px 24px rgba(153, 27, 27, 0.10);
+  --shadow-lg:    0 16px 40px rgba(153, 27, 27, 0.14);
+  --shadow-modal: 0 20px 60px rgba(74, 13, 18, 0.22);
+
+  /* ── Gradients ── */
+  --grad-red:      linear-gradient(135deg, #991B1B 0%, #DC2626 100%);
+  --grad-gold:     linear-gradient(135deg, #C99312 0%, #F5B82E 100%);
+  --grad-hero:     linear-gradient(135deg, #4A0D12 0%, #991B1B 60%, #C99312 100%);
+  --grad-sidebar:  linear-gradient(180deg, #4A0D12 0%, #6D141C 65%, #7F1D1D 100%);
+
+  /* ── Transitions ── */
+  --transition-fast:   0.15s ease;
   --transition-normal: 0.25s ease;
 }
