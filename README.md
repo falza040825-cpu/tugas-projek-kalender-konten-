@@ -1,4 +1,4 @@
-# 📅 StudioFlow — Kalender Konten Digital
+# 📅 Yayasan Motivator Qur'an — Kalender Konten Digital
 
 > Aplikasi web internal untuk mengelola perencanaan, kalender, alur produksi, tugas, aset, notifikasi, dan evaluasi konten digital dalam satu ruang kerja.
 
@@ -11,7 +11,7 @@
 
 ## 📌 Tentang Proyek
 
-**StudioFlow** adalah prototipe front-end untuk tim konten digital. Dirancang untuk memberi visibilitas cepat terhadap status produksi, publikasi, keterlambatan, dan tugas mendesak — semua dalam satu antarmuka yang bersih dan responsif.
+**Yayasan Motivator Qur'an (Content Operations)** adalah prototipe front-end untuk tim konten digital. Dirancang untuk memberi visibilitas cepat terhadap status produksi, publikasi, keterlambatan, dan tugas mendesak — semua dalam satu antarmuka yang bersih dan responsif.
 
 > ⚠️ **Prototipe:** Seluruh data adalah data dummy. Tidak ada backend, autentikasi nyata, upload sungguhan, atau integrasi platform pada tahap ini.
 

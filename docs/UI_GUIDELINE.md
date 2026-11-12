@@ -1,4 +1,4 @@
-# UI Guideline — StudioFlow
+# UI Guideline — Yayasan Motivator Qur'an
 
 **Status:** Diselaraskan ke tema **Merah · Gold · Putih** sesuai persetujuan pengguna. Jangan memperluas scope fitur/backend tanpa approval.
 

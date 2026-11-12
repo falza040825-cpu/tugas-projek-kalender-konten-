@@ -1,49 +1,75 @@
 /**
- * Manajemen Tugas — StudioFlow Fase 2 & QA Fase 4
- * Tabel tugas dengan filter prioritas/status/assignee · Modal buat & edit tugas (demo)
+ * Manajemen Tugas / Antrean Konten RBAC — Yayasan Motivator Qur'an Fase 5
+ * Adaptif per peran (Ketua Tim, Copywriter, Editor) dengan data terhubung lokal
  */
 
-import { taskItems, teamMembers } from '../data/mockData.js';
-import { escapeHtml, formatShortDateId } from '../utils/helpers.js';
+import {
+  ROLES,
+  WORKFLOW_STATUSES,
+  STATUS_TO_META,
+  taskItems,
+  teamMembers,
+  getCurrentUser,
+  getRolePermissions,
+  isCopywriterQueueItem,
+  isEditorQueueItem,
+  isKetuaReviewItem,
+  updateContentByKetua,
+} from '../data/mockData.js';
+import { openNewContentModal, openContentWorkflowModal } from './contentModal.js';
+import { escapeHtml, formatShortDateId, isValidHttpUrl, normalizePlatformClass } from '../utils/helpers.js';
 
 let taskState = {
-  filterStatus:   'Semua',
+  filterStatus: 'Semua',
   filterPriority: 'Semua',
   filterAssignee: 'Semua',
-  searchQuery:    '',
+  searchQuery: '',
 };
 
-const STATUSES_TASK  = ['Semua', 'Belum mulai', 'Dalam proses', 'Revisi', 'Menunggu', 'Terlambat', 'Selesai'];
-const PRIORITIES     = ['Semua', 'Tinggi', 'Normal'];
-const ASSIGNEES      = ['Semua', ...teamMembers.map(m => m.name)];
-const PLATFORMS_LIST = ['Instagram', 'TikTok', 'YouTube'];
+const PRIORITIES = ['Semua', 'Tinggi', 'Normal'];
+const COPYWRITER_STATUSES = ['Semua', 'Ide', 'Perlu Naskah', 'Revisi Naskah'];
 
-const STATUS_CLASS_MAP = {
-  'Belum mulai':  'st-idea',
-  'Dalam proses': 'st-progress',
-  'Revisi':       'st-revision',
-  'Menunggu':     'st-wait',
-  'Terlambat':    'st-late',
-  'Selesai':      'st-done',
-};
+function getRoleBaseItems(role) {
+  if (role === ROLES.COPYWRITER) return taskItems.filter(isCopywriterQueueItem);
+  if (role === ROLES.EDITOR) return taskItems.filter(isEditorQueueItem);
+  return taskItems;
+}
 
-function applyTaskFilters(items) {
-  return items.filter(item => {
-    const okS = taskState.filterStatus   === 'Semua' || item.status   === taskState.filterStatus;
+function getAvailableStatusFilters(role) {
+  if (role === ROLES.COPYWRITER) return COPYWRITER_STATUSES;
+  if (role === ROLES.EDITOR) return ['Siap Edit'];
+  return ['Semua', ...WORKFLOW_STATUSES];
+}
+
+function applyTaskFilters(role) {
+  const base = getRoleBaseItems(role);
+  const validStatuses = getAvailableStatusFilters(role);
+  const effectiveStatus = validStatuses.includes(taskState.filterStatus)
+    ? taskState.filterStatus
+    : validStatuses[0];
+
+  return base.filter(item => {
+    const okS = effectiveStatus === 'Semua' || item.status === effectiveStatus;
     const okP = taskState.filterPriority === 'Semua' || item.priority === taskState.filterPriority;
-    const okA = taskState.filterAssignee === 'Semua' || item.assignee === taskState.filterAssignee;
+    const okA = role !== ROLES.KETUA_TIM || taskState.filterAssignee === 'Semua' || item.assignee === taskState.filterAssignee;
     const okQ = !taskState.searchQuery ||
       item.title.toLowerCase().includes(taskState.searchQuery) ||
-      item.project.toLowerCase().includes(taskState.searchQuery);
+      item.project.toLowerCase().includes(taskState.searchQuery) ||
+      (item.notes || '').toLowerCase().includes(taskState.searchQuery);
     return okS && okP && okA && okQ;
   });
 }
 
-function activeFilterCount() {
+function activeFilterCount(role) {
+  const validStatuses = getAvailableStatusFilters(role);
+  const effectiveStatus = validStatuses.includes(taskState.filterStatus)
+    ? taskState.filterStatus
+    : validStatuses[0];
+
   return [
-    taskState.filterStatus !== 'Semua',
+    role !== ROLES.EDITOR && effectiveStatus !== 'Semua',
     taskState.filterPriority !== 'Semua',
-    taskState.filterAssignee !== 'Semua',
+    role === ROLES.KETUA_TIM && taskState.filterAssignee !== 'Semua',
     !!taskState.searchQuery,
   ].filter(Boolean).length;
 }
@@ -53,52 +79,120 @@ function priorityBadge(p) {
   return `<span class="priority-badge ${cls}">${escapeHtml(p)}</span>`;
 }
 
-function renderTaskTable(items) {
+function roleCueHtml(item, role) {
+  if (role === ROLES.COPYWRITER) {
+    const hasScript = Boolean(item.script && item.script.trim());
+    const hasCaption = Boolean(item.caption && item.caption.trim());
+    return `
+      <div class="task-role-meta">
+        <span>Script: <strong>${hasScript ? 'Terisi' : 'Kosong'}</strong></span>
+        <span>·</span>
+        <span>Caption: <strong>${hasCaption ? 'Terisi' : 'Kosong'}</strong></span>
+      </div>
+    `;
+  }
+  if (role === ROLES.EDITOR) {
+    const hasRaw = isValidHttpUrl(item.rawFootageUrl);
+    return `
+      <div class="task-role-meta">
+        <span>${hasRaw ? '📁 Raw Footage Drive tersedia' : '📁 Belum ada link Drive'}</span>
+        <span>·</span>
+        <span>${item.script ? '✍️ Naskah siap' : '✍️ Tanpa naskah'}</span>
+      </div>
+    `;
+  }
+  return '';
+}
+
+function renderTaskTable(items, role) {
   if (items.length === 0) {
+    if (role === ROLES.COPYWRITER && !taskState.searchQuery && taskState.filterPriority === 'Semua') {
+      return `
+        <div class="cal-empty-state">
+          Semua tugas naskah & caption telah selesai dan masuk antrean <strong>Siap Edit</strong> Editor!
+        </div>
+      `;
+    }
+    if (role === ROLES.EDITOR && !taskState.searchQuery && taskState.filterPriority === 'Semua') {
+      return `
+        <div class="cal-empty-state">
+          Belum ada tugas baru berstatus <strong>"Siap Edit"</strong> saat ini. Tugas yang ditandai "Siap Edit" oleh Copywriter akan otomatis tampil di sini.
+        </div>
+      `;
+    }
     return `<div class="cal-empty-state">Tidak ada tugas yang cocok dengan filter aktif.</div>`;
   }
+
   return `
     <div class="task-table full-task-table">
       <div class="table-head full-task-head">
-        <span>TUGAS</span>
-        <span>PROYEK / PLATFORM</span>
+        <span>KONTEN / TUGAS</span>
+        <span>PLATFORM & KATEGORI</span>
         <span>PENANGGUNG JAWAB</span>
         <span>DEADLINE</span>
         <span>PRIORITAS</span>
         <span>STATUS</span>
         <span>AKSI</span>
       </div>
-      ${items.map(item => `
+      ${items.map(item => {
+        const isKetua = role === ROLES.KETUA_TIM;
+        const actionLabel = role === ROLES.COPYWRITER
+          ? 'Tulis Naskah'
+          : role === ROLES.EDITOR
+            ? 'Proses Edit'
+            : (item.status === 'Menunggu Review' ? 'Review & Approve' : 'Kelola');
+        const btnClass = (item.status === 'Menunggu Review' && isKetua) || role !== ROLES.KETUA_TIM
+          ? 'btn-primary'
+          : 'btn-secondary';
+
+        return `
         <div class="task-row full-task-row ${item.isOverdue ? 'row-overdue' : ''}">
           <div class="task-name">
             <span class="task-check ${item.isOverdue ? 'overdue' : ''}" aria-hidden="true">${item.isOverdue ? '!' : '✓'}</span>
             <div style="min-width:0;">
               <strong>${escapeHtml(item.title)}</strong>
               ${item.notes ? `<div class="task-note">${escapeHtml(item.notes)}</div>` : ''}
+              ${roleCueHtml(item, role)}
             </div>
           </div>
           <div class="task-col-project">
-            <div class="cl-muted" style="font-size:11px;">${escapeHtml(item.project)}</div>
-            <span class="platform-chip plat-${item.platform.toLowerCase()}" style="font-size:10px;margin-top:4px;">${escapeHtml(item.platform)}</span>
+            <span class="platform-chip ${normalizePlatformClass(item.platform)}" style="font-size:10px;">${escapeHtml(item.platform)}</span>
+            <div class="cl-muted" style="font-size:11px;margin-top:3px;">${escapeHtml(item.category)}</div>
           </div>
           <div class="assignee task-col-assignee">
             <span class="mini-avatar">${escapeHtml(item.initials)}</span>
-            <span class="cl-muted">${escapeHtml(item.assignee)}</span>
+            <div>
+              <div class="cl-muted">${escapeHtml(item.assignee)}</div>
+              <div style="font-size:10px;color:var(--color-ink-muted);">CW: ${escapeHtml(item.assigneeCopywriter.split(' ')[0])} · ED: ${escapeHtml(item.assigneeEditor.split(' ')[0])}</div>
+            </div>
           </div>
           <div class="deadline task-col-deadline ${item.isOverdue ? 'late' : ''}">${escapeHtml(formatShortDateId(item.deadline))}</div>
           <div class="task-col-priority">${priorityBadge(item.priority)}</div>
           <div class="task-col-status">
-            <select class="status-select" data-task-id="${escapeHtml(item.id)}" aria-label="Ubah status tugas ${escapeHtml(item.title)}">
-              ${STATUSES_TASK.filter(s => s !== 'Semua').map(s =>
-                `<option value="${escapeHtml(s)}" ${s === item.status ? 'selected' : ''}>${escapeHtml(s)}</option>`
-              ).join('')}
-            </select>
+            ${isKetua ? `
+              <select class="status-select" data-task-id="${escapeHtml(item.id)}" aria-label="Ubah status ${escapeHtml(item.title)}">
+                ${WORKFLOW_STATUSES.map(s =>
+                  `<option value="${escapeHtml(s)}" ${s === item.status ? 'selected' : ''}>${escapeHtml(s)}</option>`
+                ).join('')}
+              </select>
+            ` : `
+              <span class="status-pill ${item.statusClass}">${escapeHtml(item.status)}</span>
+            `}
           </div>
           <div class="task-col-action">
-            <button type="button" class="btn-secondary task-detail-btn" style="padding:6px 10px;font-size:11px;" data-task-id="${escapeHtml(item.id)}" aria-label="Detail dan edit tugas ${escapeHtml(item.title)}">Detail</button>
+            <button
+              type="button"
+              class="${btnClass} task-detail-btn"
+              style="padding:6px 11px;font-size:11px;"
+              data-task-id="${escapeHtml(item.id)}"
+              aria-label="${escapeHtml(actionLabel)} ${escapeHtml(item.title)}"
+            >
+              ${escapeHtml(actionLabel)}
+            </button>
           </div>
         </div>
-      `).join('')}
+      `;
+      }).join('')}
     </div>
   `;
 }
@@ -114,52 +208,122 @@ function filterSelect(id, values, active, label) {
   `;
 }
 
-function renderTaskStats() {
-  const total    = taskItems.length;
-  const overdue  = taskItems.filter(t => t.isOverdue).length;
-  const done     = taskItems.filter(t => t.status === 'Selesai').length;
-  const high     = taskItems.filter(t => t.priority === 'Tinggi' && t.status !== 'Selesai').length;
+function renderTaskStats(role, baseItems) {
+  const totalInWorkspace = taskItems.length;
+  const siapEditCount = taskItems.filter(isEditorQueueItem).length;
+  const reviewCount = taskItems.filter(isKetuaReviewItem).length;
+  const doneCount = taskItems.filter(t => ['Siap Tayang', 'Dipublikasikan'].includes(t.status)).length;
+  const highCount = baseItems.filter(t => t.priority === 'Tinggi').length;
+
+  if (role === ROLES.COPYWRITER) {
+    return `
+      <div class="pip-stats" id="task-stats-bar" style="margin-bottom:20px;">
+        <div class="pip-stat-item">
+          <span class="pip-stat-val">${baseItems.length}</span>
+          <span class="pip-stat-label">Antrean naskah</span>
+        </div>
+        <div class="pip-stat-divider"></div>
+        <div class="pip-stat-item">
+          <span class="pip-stat-val" style="color:var(--color-blush-ink)">${baseItems.filter(i => i.status === 'Revisi Naskah').length}</span>
+          <span class="pip-stat-label">Revisi naskah</span>
+        </div>
+        <div class="pip-stat-divider"></div>
+        <div class="pip-stat-item">
+          <span class="pip-stat-val" style="color:var(--color-sand-ink)">${highCount}</span>
+          <span class="pip-stat-label">Prioritas tinggi</span>
+        </div>
+        <div class="pip-stat-divider"></div>
+        <div class="pip-stat-item">
+          <span class="pip-stat-val" style="color:var(--color-sage-ink)">${siapEditCount}</span>
+          <span class="pip-stat-label">Sudah Siap Edit (Editor)</span>
+        </div>
+      </div>
+    `;
+  }
+
+  if (role === ROLES.EDITOR) {
+    return `
+      <div class="pip-stats" id="task-stats-bar" style="margin-bottom:20px;">
+        <div class="pip-stat-item">
+          <span class="pip-stat-val">${baseItems.length}</span>
+          <span class="pip-stat-label">Antrean "Siap Edit"</span>
+        </div>
+        <div class="pip-stat-divider"></div>
+        <div class="pip-stat-item">
+          <span class="pip-stat-val" style="color:var(--color-blush-ink)">${highCount}</span>
+          <span class="pip-stat-label">Prioritas tinggi</span>
+        </div>
+        <div class="pip-stat-divider"></div>
+        <div class="pip-stat-item">
+          <span class="pip-stat-val" style="color:var(--color-sand-ink)">${reviewCount}</span>
+          <span class="pip-stat-label">Menunggu Review Ketua</span>
+        </div>
+        <div class="pip-stat-divider"></div>
+        <div class="pip-stat-item">
+          <span class="pip-stat-val" style="color:var(--color-sage-ink)">${doneCount}</span>
+          <span class="pip-stat-label">Disetujui / Tayang</span>
+        </div>
+      </div>
+    `;
+  }
 
   return `
     <div class="pip-stats" id="task-stats-bar" style="margin-bottom:20px;">
       <div class="pip-stat-item">
-        <span class="pip-stat-val">${total}</span>
-        <span class="pip-stat-label">Total tugas</span>
+        <span class="pip-stat-val">${totalInWorkspace}</span>
+        <span class="pip-stat-label">Total konten/tugas</span>
       </div>
       <div class="pip-stat-divider"></div>
       <div class="pip-stat-item">
-        <span class="pip-stat-val" style="color:var(--color-blush-ink)">${overdue}</span>
-        <span class="pip-stat-label">Terlambat</span>
+        <span class="pip-stat-val" style="color:var(--color-blush-ink)">${reviewCount}</span>
+        <span class="pip-stat-label">Menunggu Review</span>
       </div>
       <div class="pip-stat-divider"></div>
       <div class="pip-stat-item">
-        <span class="pip-stat-val" style="color:var(--color-sand-ink)">${high}</span>
-        <span class="pip-stat-label">Prioritas tinggi</span>
+        <span class="pip-stat-val" style="color:var(--color-sand-ink)">${siapEditCount}</span>
+        <span class="pip-stat-label">Siap Edit (Editor)</span>
       </div>
       <div class="pip-stat-divider"></div>
       <div class="pip-stat-item">
-        <span class="pip-stat-val" style="color:var(--color-sage-ink)">${done}</span>
-        <span class="pip-stat-label">Selesai</span>
+        <span class="pip-stat-val" style="color:var(--color-sage-ink)">${doneCount}</span>
+        <span class="pip-stat-label">Siap / Tayang</span>
       </div>
     </div>
   `;
 }
 
 export function renderTasks() {
-  const filtered = applyTaskFilters(taskItems);
-  const activeCount = activeFilterCount();
+  const user = getCurrentUser();
+  const role = user?.role || ROLES.COPYWRITER;
+  const perms = getRolePermissions(role);
+  const baseItems = getRoleBaseItems(role);
+  const filtered = applyTaskFilters(role);
+  const activeCount = activeFilterCount(role);
+  const statusOptions = getAvailableStatusFilters(role);
+  const activeStatus = statusOptions.includes(taskState.filterStatus) ? taskState.filterStatus : statusOptions[0];
+  const assigneesList = ['Semua', ...teamMembers.map(m => m.name)];
+
+  const subtitle = role === ROLES.COPYWRITER
+    ? 'Daftar khusus tugas konten yang membutuhkan script & caption (Copywriter)'
+    : role === ROLES.EDITOR
+      ? 'Daftar khusus tugas berstatus "Siap Edit" lengkap dengan raw footage Google Drive & naskah Copywriter'
+      : 'Kelola seluruh konten, penugasan Copywriter/Editor, serta review & approval hasil akhir';
 
   return `
     <div class="page-heading">
       <div>
-        <div class="eyebrow">WORKSPACE / MANAJEMEN TUGAS</div>
-        <h1>Manajemen Tugas</h1>
-        <p>Kelola tugas tim, penanggung jawab, deadline, dan status pengerjaan</p>
+        <div class="eyebrow">WORKSPACE / MANAJEMEN TUGAS (${escapeHtml(role.toUpperCase())})</div>
+        <h1>${role === ROLES.COPYWRITER ? 'Antrean Naskah Copywriter' : role === ROLES.EDITOR ? 'Antrean Siap Edit (Editor)' : 'Manajemen Tugas & Approval'}</h1>
+        <p>${escapeHtml(subtitle)}</p>
       </div>
-      <button type="button" class="btn-primary" id="btn-task-new"><span>＋</span> Tugas Baru (Demo)</button>
+      ${perms.canCreateContent ? `
+        <button type="button" class="btn-primary" id="btn-task-new"><span>＋</span> Buat Konten / Tugas</button>
+      ` : `
+        <span class="filter-summary-chip">Filter Peran Aktif: ${escapeHtml(role)}</span>
+      `}
     </div>
 
-    ${renderTaskStats()}
+    ${renderTaskStats(role, baseItems)}
 
     <!-- Filter & Search -->
     <div class="panel" style="margin-bottom:20px; padding: 16px 20px;">
@@ -170,33 +334,33 @@ export function renderTasks() {
             type="text"
             id="task-search"
             class="task-search-input"
-            placeholder="Cari judul atau proyek..."
+            placeholder="Cari judul konten atau catatan..."
             value="${escapeHtml(taskState.searchQuery)}"
             aria-label="Cari tugas"
           />
         </div>
-        ${filterSelect('tf-status',   STATUSES_TASK,  taskState.filterStatus,   'Status')}
-        ${filterSelect('tf-priority', PRIORITIES,     taskState.filterPriority, 'Prioritas')}
-        ${filterSelect('tf-assignee', ASSIGNEES,      taskState.filterAssignee, 'Penanggungjawab')}
+        ${role !== ROLES.EDITOR ? filterSelect('tf-status', statusOptions, activeStatus, 'Status') : ''}
+        ${filterSelect('tf-priority', PRIORITIES, taskState.filterPriority, 'Prioritas')}
+        ${role === ROLES.KETUA_TIM ? filterSelect('tf-assignee', assigneesList, taskState.filterAssignee, 'Penanggungjawab') : ''}
         <span id="task-clear-wrap" style="align-self:flex-end;">
           ${activeCount > 0 ? `<button type="button" class="btn-secondary" id="task-clear-filters">Hapus filter</button>` : ''}
         </span>
       </div>
       <div id="task-count-info" style="font-size:11px;color:var(--color-ink-muted);margin-top:10px;">
-        Menampilkan ${filtered.length} dari ${taskItems.length} tugas
+        Menampilkan ${filtered.length} dari ${baseItems.length} item pada antrean ${escapeHtml(role)}
       </div>
     </div>
 
     <!-- Task Table -->
     <div class="panel" id="task-list-panel" style="margin-bottom:20px; padding: 0 0 8px;">
-      ${renderTaskTable(filtered)}
+      ${renderTaskTable(filtered, role)}
     </div>
 
     <div class="demo-banner">
       <span class="demo-banner-icon">✳</span>
       <div class="demo-banner-content">
-        <strong>Manajemen Tugas — Simulasi Lokal</strong>
-        <p>Buat, edit, ubah status, dan filter tugas bekerja pada sesi UI lokal (data dummy). Persistensi permanen memerlukan backend.</p>
+        <strong>Alur Tugas Lintas Peran — Simulasi Lokal</strong>
+        <p>Copywriter mengisi naskah → "Siap Edit" → tampil otomatis di Editor → tempel output URL → "Menunggu Review" → Approval Ketua Tim.</p>
       </div>
       <span class="demo-badge">SIMULASI</span>
     </div>
@@ -204,237 +368,73 @@ export function renderTasks() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Modal Buat / Edit Tugas (Demo)
-// ─────────────────────────────────────────────────────────────────────────────
-
-function openTaskModal(renderApp, showToast, existingTask = null) {
-  const modalContainer = document.querySelector('#modal-container');
-  if (!modalContainer) return;
-
-  const isEdit = Boolean(existingTask);
-  const current = existingTask || {
-    title: '',
-    project: 'Konten Baru (Demo)',
-    platform: 'Instagram',
-    assignee: teamMembers[0]?.name || 'Farah Aulia',
-    priority: 'Normal',
-    deadline: '2026-10-20',
-    status: 'Belum mulai',
-    notes: '',
-  };
-
-  modalContainer.innerHTML = `
-    <div class="modal-backdrop" id="task-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
-      <div class="panel modal-card" style="width:min(540px,100%);">
-        <button type="button" class="modal-close-btn" id="close-modal" aria-label="Tutup modal">✕</button>
-        <span class="eyebrow">SIMULASI FORM LOKAL</span>
-        <h2 id="task-modal-title" style="font-size:20px;margin:6px 0 4px;">${isEdit ? 'Detail & Edit Tugas' : 'Buat Tugas Baru'}</h2>
-        <p style="font-size:12px;color:var(--color-ink-secondary);margin-bottom:18px;">
-          Perubahan berlaku pada sesi UI ini saja. Penyimpanan permanen memerlukan backend.
-        </p>
-
-        <form id="task-modal-form" novalidate style="display:flex;flex-direction:column;gap:14px;">
-          <div>
-            <label class="form-label" for="nt-title">Judul Tugas *</label>
-            <input id="nt-title" class="form-control" value="${escapeHtml(current.title)}" placeholder="Contoh: Review naskah promo" />
-            <div id="nt-title-error" class="form-error" role="alert" style="display:none;"></div>
-          </div>
-
-          <div class="form-grid-2">
-            <div>
-              <label class="form-label" for="nt-project">Proyek / Konten Terkait</label>
-              <input id="nt-project" class="form-control" value="${escapeHtml(current.project)}" placeholder="Nama konten terkait" />
-            </div>
-            <div>
-              <label class="form-label" for="nt-platform">Platform</label>
-              <select id="nt-platform" class="form-control">
-                ${PLATFORMS_LIST.map(p => `<option value="${p}" ${p === current.platform ? 'selected' : ''}>${p}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-
-          <div class="form-grid-2">
-            <div>
-              <label class="form-label" for="nt-assignee">Penanggungjawab</label>
-              <select id="nt-assignee" class="form-control">
-                ${teamMembers.map(m => `<option value="${escapeHtml(m.name)}" ${m.name === current.assignee ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="form-label" for="nt-priority">Prioritas</label>
-              <select id="nt-priority" class="form-control">
-                <option value="Normal" ${current.priority === 'Normal' ? 'selected' : ''}>Normal</option>
-                <option value="Tinggi" ${current.priority === 'Tinggi' ? 'selected' : ''}>Tinggi</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-grid-2">
-            <div>
-              <label class="form-label" for="nt-deadline">Deadline</label>
-              <input id="nt-deadline" type="date" class="form-control" value="${escapeHtml(current.deadline)}" />
-            </div>
-            <div>
-              <label class="form-label" for="nt-status">Status</label>
-              <select id="nt-status" class="form-control">
-                ${STATUSES_TASK.filter(s => s !== 'Semua').map(s => `<option value="${escapeHtml(s)}" ${s === current.status ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="form-label" for="nt-notes">Instruksi / Catatan</label>
-            <textarea id="nt-notes" class="form-control" style="height:auto;padding:8px 12px;resize:vertical;" placeholder="Catatan tambahan..." rows="3">${escapeHtml(current.notes)}</textarea>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" id="cancel-modal" class="btn-secondary">Batal</button>
-            <button type="submit" class="btn-primary">${isEdit ? 'Simpan Perubahan (Simulasi)' : 'Simpan (Simulasi)'}</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `;
-
-  document.querySelector('#nt-title')?.focus();
-
-  const onKeyDown = (e) => { if (e.key === 'Escape') closeModal(); };
-  const closeModal = () => {
-    document.removeEventListener('keydown', onKeyDown);
-    modalContainer.innerHTML = '';
-  };
-
-  document.addEventListener('keydown', onKeyDown);
-  document.querySelector('#close-modal')?.addEventListener('click', closeModal);
-  document.querySelector('#cancel-modal')?.addEventListener('click', closeModal);
-  document.querySelector('#task-modal-backdrop')?.addEventListener('click', (e) => {
-    if (e.target.id === 'task-modal-backdrop') closeModal();
-  });
-
-  document.querySelector('#task-modal-form')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const titleEl  = document.querySelector('#nt-title');
-    const titleErr = document.querySelector('#nt-title-error');
-    const title    = titleEl.value.trim();
-
-    if (!title) {
-      titleErr.textContent = 'Judul tugas wajib diisi.';
-      titleErr.style.display = 'block';
-      titleEl.focus();
-      return;
-    }
-    titleErr.style.display = 'none';
-
-    const project  = document.querySelector('#nt-project').value.trim() || 'Umum';
-    const platform = document.querySelector('#nt-platform').value;
-    const assignee = document.querySelector('#nt-assignee').value;
-    const priority = document.querySelector('#nt-priority').value;
-    const deadline = document.querySelector('#nt-deadline').value || '2026-10-20';
-    const status   = document.querySelector('#nt-status').value;
-    const notes    = document.querySelector('#nt-notes').value.trim();
-
-    const member = teamMembers.find(m => m.name === assignee);
-    const initials = member ? member.initials : 'SF';
-
-    if (isEdit && existingTask) {
-      existingTask.title       = title;
-      existingTask.project     = project;
-      existingTask.platform    = platform;
-      existingTask.assignee    = assignee;
-      existingTask.initials    = initials;
-      existingTask.deadline    = deadline;
-      existingTask.priority    = priority;
-      existingTask.status      = status;
-      existingTask.statusClass = STATUS_CLASS_MAP[status] || 'st-idea';
-      existingTask.notes       = notes;
-      existingTask.isOverdue   = status === 'Terlambat';
-      closeModal();
-      showToast(`Tugas "${title}" diperbarui untuk sesi ini.`);
-    } else {
-      taskItems.unshift({
-        id: `task-${Date.now()}`,
-        title,
-        project,
-        platform,
-        assignee,
-        initials,
-        deadline,
-        priority,
-        status,
-        statusClass: STATUS_CLASS_MAP[status] || 'st-idea',
-        notes,
-        isOverdue: status === 'Terlambat',
-      });
-      closeModal();
-      showToast(`Tugas "${title}" ditambahkan untuk sesi ini.`);
-    }
-    renderApp();
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Event binding
 // ─────────────────────────────────────────────────────────────────────────────
 
-function attachTaskRowEvents(renderApp, showToast) {
-  document.querySelectorAll('.status-select').forEach(sel => {
-    sel.addEventListener('change', () => {
-      const taskId = sel.dataset.taskId;
-      const item   = taskItems.find(t => t.id === taskId);
-      if (!item) return;
-      const oldStatus = item.status;
-      item.status      = sel.value;
-      item.statusClass = STATUS_CLASS_MAP[sel.value] || 'st-idea';
-      item.isOverdue   = sel.value === 'Terlambat';
-      showToast(`"${item.title}": ${oldStatus} → ${item.status}`);
-      renderApp();
+function attachTaskRowEvents(renderApp, showToast, role) {
+  if (role === ROLES.KETUA_TIM) {
+    document.querySelectorAll('.status-select').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const taskId = sel.dataset.taskId;
+        const item = taskItems.find(t => t.id === taskId);
+        if (!item) return;
+        const oldStatus = item.status;
+        if (!STATUS_TO_META[sel.value]) return;
+        updateContentByKetua({
+          id: taskId,
+          status: sel.value,
+          isOverdue: false,
+        });
+        showToast(`"${item.title}": ${oldStatus} → ${sel.value}`);
+        renderApp();
+      });
     });
-  });
+  }
 
   document.querySelectorAll('.task-detail-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const taskId = btn.dataset.taskId;
-      const item   = taskItems.find(t => t.id === taskId);
-      if (!item) return;
-      openTaskModal(renderApp, showToast, item);
+      openContentWorkflowModal(btn.dataset.taskId, renderApp, showToast);
     });
   });
 }
 
-function updateTaskListOnly(renderApp, showToast) {
-  const filtered = applyTaskFilters(taskItems);
+function updateTaskListOnly(renderApp, showToast, role) {
+  const baseItems = getRoleBaseItems(role);
+  const filtered = applyTaskFilters(role);
   const panelEl = document.querySelector('#task-list-panel');
   const countEl = document.querySelector('#task-count-info');
   const clearWrap = document.querySelector('#task-clear-wrap');
 
-  if (panelEl) panelEl.innerHTML = renderTaskTable(filtered);
-  if (countEl) countEl.textContent = `Menampilkan ${filtered.length} dari ${taskItems.length} tugas`;
+  if (panelEl) panelEl.innerHTML = renderTaskTable(filtered, role);
+  if (countEl) countEl.textContent = `Menampilkan ${filtered.length} dari ${baseItems.length} item pada antrean ${role}`;
   if (clearWrap) {
-    const activeCount = activeFilterCount();
+    const activeCount = activeFilterCount(role);
     clearWrap.innerHTML = activeCount > 0
       ? `<button type="button" class="btn-secondary" id="task-clear-filters">Hapus filter</button>`
       : '';
     document.querySelector('#task-clear-filters')?.addEventListener('click', () => {
-      taskState.filterStatus   = 'Semua';
+      taskState.filterStatus = 'Semua';
       taskState.filterPriority = 'Semua';
       taskState.filterAssignee = 'Semua';
-      taskState.searchQuery    = '';
+      taskState.searchQuery = '';
       renderApp();
     });
   }
-  attachTaskRowEvents(renderApp, showToast);
+  attachTaskRowEvents(renderApp, showToast, role);
 }
 
 export function attachTaskEvents(renderApp, showToast) {
+  const role = getCurrentUser()?.role || ROLES.COPYWRITER;
+
   document.querySelector('#btn-task-new')?.addEventListener('click', () => {
-    openTaskModal(renderApp, showToast, null);
+    openNewContentModal(renderApp, showToast);
   });
 
   document.querySelectorAll('.task-filter-select').forEach(sel => {
     sel.addEventListener('change', () => {
-      const id  = sel.dataset.filterId;
+      const id = sel.dataset.filterId;
       const val = sel.value;
-      if (id === 'tf-status')   taskState.filterStatus   = val;
+      if (id === 'tf-status') taskState.filterStatus = val;
       if (id === 'tf-priority') taskState.filterPriority = val;
       if (id === 'tf-assignee') taskState.filterAssignee = val;
       renderApp();
@@ -443,16 +443,16 @@ export function attachTaskEvents(renderApp, showToast) {
 
   document.querySelector('#task-search')?.addEventListener('input', (e) => {
     taskState.searchQuery = e.target.value.toLowerCase().trim();
-    updateTaskListOnly(renderApp, showToast);
+    updateTaskListOnly(renderApp, showToast, role);
   });
 
   document.querySelector('#task-clear-filters')?.addEventListener('click', () => {
-    taskState.filterStatus   = 'Semua';
+    taskState.filterStatus = 'Semua';
     taskState.filterPriority = 'Semua';
     taskState.filterAssignee = 'Semua';
-    taskState.searchQuery    = '';
+    taskState.searchQuery = '';
     renderApp();
   });
 
-  attachTaskRowEvents(renderApp, showToast);
+  attachTaskRowEvents(renderApp, showToast, role);
 }

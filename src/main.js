@@ -1,5 +1,5 @@
 /**
- * StudioFlow - Entry Point & Application Shell Handler
+ * Yayasan Motivator Qur'an - Entry Point & Dynamic RBAC Application Shell Handler
  */
 
 import './styles/tokens.css';
@@ -13,11 +13,19 @@ import {
   assetsData,
   sotDocs,
   navigationItems,
+  ROLES,
+  getCurrentUser,
+  canAccessRoute,
+  quickSwitchRole,
+  logoutCurrentUser,
+  isCopywriterQueueItem,
+  isEditorQueueItem,
 } from './data/mockData.js';
 import { escapeHtml } from './utils/helpers.js';
+import { renderLogin, attachLoginEvents, resetAuthUiState } from './components/login.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderTopbar } from './components/topbar.js';
-import { renderDashboard } from './components/dashboard.js';
+import { renderDashboard, attachDashboardEvents } from './components/dashboard.js';
 import { renderPlaceholder } from './components/placeholder.js';
 import { renderDocsView } from './components/docsView.js';
 import { renderCalendar, attachCalendarEvents } from './components/calendar.js';
@@ -29,7 +37,6 @@ import { renderNotifications, attachNotificationsEvents } from './components/not
 import { renderReports, attachReportsEvents } from './components/reports.js';
 import { openNewContentModal } from './components/contentModal.js';
 
-// Application State
 let state = {
   currentRoute: 'Overview',
   activeDocKey: 'PRD',
@@ -40,9 +47,70 @@ let state = {
 let toastTimer = null;
 const appContainer = document.querySelector('#app');
 
-function renderApp() {
-  let contentHtml = '';
+function showToast(message) {
+  const toastEl = document.querySelector('#toast');
+  if (!toastEl) return;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastEl.textContent = message;
+  toastEl.classList.add('show');
+  toastTimer = setTimeout(() => {
+    toastEl.classList.remove('show');
+  }, 3000);
+}
 
+function navigateTo(targetRoute, extraDocKey = null) {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const normalizedRoute = targetRoute === 'Pengguna & akses' ? 'Manajemen Tim' : targetRoute;
+
+  if (!canAccessRoute(user.role, normalizedRoute)) {
+    state.currentRoute = 'Overview';
+    state.sidebarOpen = false;
+    renderApp();
+    showToast(`Akses ditolak: menu "${normalizedRoute}" khusus untuk Ketua Tim.`);
+    return;
+  }
+
+  if (extraDocKey) state.activeDocKey = extraDocKey;
+  state.currentRoute = normalizedRoute;
+  state.sidebarOpen = false;
+  renderApp();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderApp() {
+  const user = getCurrentUser();
+
+  // Gerbang Autentikasi Simulasi: tampilkan 2-Tab Login / Aktivasi jika belum login
+  if (!user) {
+    appContainer.innerHTML = `
+      ${renderLogin()}
+      <div id="toast" class="toast-notification" role="status" aria-live="polite"></div>
+      <div id="modal-container"></div>
+    `;
+    const rerenderLogin = (focusSelector = null) => {
+      renderApp();
+      if (focusSelector) {
+        document.querySelector(focusSelector)?.focus();
+      }
+    };
+    attachLoginEvents((loggedUser) => {
+      state.currentRoute = 'Overview';
+      state.globalSearchQuery = '';
+      state.sidebarOpen = false;
+      renderApp();
+      showToast(`Selamat datang, ${loggedUser.name} · Peran terdeteksi: ${loggedUser.role}`);
+    }, showToast, rerenderLogin);
+    return;
+  }
+
+  // Guard Route RBAC: pastikan rute saat ini diizinkan untuk peran aktif
+  if (!canAccessRoute(user.role, state.currentRoute)) {
+    state.currentRoute = 'Overview';
+  }
+
+  let contentHtml = '';
   if (state.currentRoute === 'Overview') {
     contentHtml = renderDashboard();
   } else if (state.currentRoute === 'Dokumen SOT') {
@@ -53,7 +121,7 @@ function renderApp() {
     contentHtml = renderPipeline();
   } else if (state.currentRoute === 'Manajemen tugas') {
     contentHtml = renderTasks();
-  } else if (state.currentRoute === 'Pengguna & akses') {
+  } else if (state.currentRoute === 'Manajemen Tim') {
     contentHtml = renderUsers();
   } else if (state.currentRoute === 'Aset & file') {
     contentHtml = renderAssets();
@@ -80,7 +148,6 @@ function renderApp() {
     <div id="modal-container"></div>
   `;
 
-  // Restore sidebar responsive state if opened
   const sidebarEl = document.querySelector('#sidebar');
   const backdropEl = document.querySelector('#sidebar-backdrop');
   if (sidebarEl && state.sidebarOpen) {
@@ -90,14 +157,15 @@ function renderApp() {
 
   attachEventListeners();
 
-  // Route-specific event bindings
-  if (state.currentRoute === 'Kalender konten') {
+  if (state.currentRoute === 'Overview') {
+    attachDashboardEvents(renderApp, showToast);
+  } else if (state.currentRoute === 'Kalender konten') {
     attachCalendarEvents(renderApp, showToast);
   } else if (state.currentRoute === 'Alur produksi') {
     attachPipelineEvents(renderApp, showToast);
   } else if (state.currentRoute === 'Manajemen tugas') {
     attachTaskEvents(renderApp, showToast);
-  } else if (state.currentRoute === 'Pengguna & akses') {
+  } else if (state.currentRoute === 'Manajemen Tim') {
     attachUsersEvents(renderApp, showToast);
   } else if (state.currentRoute === 'Aset & file') {
     attachAssetsEvents(renderApp, showToast);
@@ -108,37 +176,38 @@ function renderApp() {
   }
 }
 
-function showToast(message) {
-  const toastEl = document.querySelector('#toast');
-  if (!toastEl) return;
-  if (toastTimer) clearTimeout(toastTimer);
-  toastEl.textContent = message;
-  toastEl.classList.add('show');
-  toastTimer = setTimeout(() => {
-    toastEl.classList.remove('show');
-  }, 2800);
+function isItemVisibleForRole(item, role) {
+  if (role === ROLES.COPYWRITER) return isCopywriterQueueItem(item);
+  if (role === ROLES.EDITOR) return isEditorQueueItem(item);
+  return true;
 }
 
 function findGlobalResults(query) {
-  if (!query) return [];
+  const user = getCurrentUser();
+  if (!query || !user) return [];
+  const role = user.role;
   const q = query.toLowerCase();
   const results = [];
 
-  calendarItems.forEach(c => {
-    if (c.title.toLowerCase().includes(q) || c.platform.toLowerCase().includes(q) || c.category.toLowerCase().includes(q)) {
-      results.push({ type: 'Kalender', title: c.title, meta: `${c.platform} · ${c.pubDate}`, route: 'Kalender konten' });
-    }
-  });
-
   taskItems.forEach(t => {
+    if (!isItemVisibleForRole(t, role)) return;
     if (t.title.toLowerCase().includes(q) || t.project.toLowerCase().includes(q) || t.assignee.toLowerCase().includes(q)) {
       results.push({ type: 'Tugas', title: t.title, meta: `${t.assignee} · ${t.status}`, route: 'Manajemen tugas' });
     }
   });
 
+  calendarItems.forEach(c => {
+    if (!isItemVisibleForRole(c, role)) return;
+    if ((c.title.toLowerCase().includes(q) || c.platform.toLowerCase().includes(q) || c.category.toLowerCase().includes(q)) &&
+        !results.some(r => r.title === c.title && r.type === 'Tugas')) {
+      results.push({ type: 'Kalender', title: c.title, meta: `${c.platform} · ${c.pubDate}`, route: 'Kalender konten' });
+    }
+  });
+
   pipelineItems.forEach(p => {
-    if (p.title.toLowerCase().includes(q) && !results.some(r => r.title === p.title && r.type === 'Kalender')) {
-      results.push({ type: 'Pipeline', title: p.title, meta: `${p.platform} · ${p.stage}`, route: 'Alur produksi' });
+    if (!isItemVisibleForRole(p, role)) return;
+    if (p.title.toLowerCase().includes(q) && !results.some(r => r.title === p.title)) {
+      results.push({ type: 'Pipeline', title: p.title, meta: `${p.platform} · ${p.status}`, route: 'Alur produksi' });
     }
   });
 
@@ -155,12 +224,12 @@ function findGlobalResults(query) {
   });
 
   navigationItems.forEach(nav => {
-    if (nav.label.toLowerCase().includes(q)) {
+    if (canAccessRoute(role, nav.id) && nav.label.toLowerCase().includes(q)) {
       results.push({ type: 'Halaman', title: nav.label, meta: 'Navigasi menu', route: nav.id });
     }
   });
 
-  return results.slice(0, 7);
+  return results.filter(r => canAccessRoute(role, r.route)).slice(0, 7);
 }
 
 function updateGlobalSearchDropdown(query) {
@@ -176,7 +245,7 @@ function updateGlobalSearchDropdown(query) {
 
   const matches = findGlobalResults(trimmed);
   if (matches.length === 0) {
-    resultsEl.innerHTML = `<div class="global-search-empty">Tidak ditemukan hasil untuk "${escapeHtml(trimmed)}".</div>`;
+    resultsEl.innerHTML = `<div class="global-search-empty">Tidak ditemukan hasil yang sesuai hak akses untuk "${escapeHtml(trimmed)}".</div>`;
     resultsEl.classList.add('open');
     return;
   }
@@ -197,27 +266,54 @@ function updateGlobalSearchDropdown(query) {
       const target = matches[i];
       if (!target) return;
       state.globalSearchQuery = '';
-      if (target.docKey) state.activeDocKey = target.docKey;
-      state.currentRoute = target.route;
-      state.sidebarOpen = false;
-      renderApp();
+      navigateTo(target.route, target.docKey || null);
     });
   });
 }
 
+function handleLogout() {
+  logoutCurrentUser();
+  resetAuthUiState();
+  state.currentRoute = 'Overview';
+  state.globalSearchQuery = '';
+  state.sidebarOpen = false;
+  renderApp();
+  showToast('Anda keluar dari sesi simulasi. Silakan masuk kembali.');
+}
+
 function attachEventListeners() {
-  // Workspace demo button
   document.querySelector('#btn-workspace-select')?.addEventListener('click', () => {
-    showToast('Workspace aktif: Tim Kreatif SGQ (prototipe mendukung 1 workspace lokal).');
+    showToast('Workspace aktif: Tim Kreatif YMQ (prototipe lokal).');
   });
 
-  // Demo period picker
-  const btnChartPeriod = document.querySelector('#btn-chart-period');
-  if (btnChartPeriod) {
-    btnChartPeriod.addEventListener('click', () =>
-      showToast('Pilih periode: simulasi UI. Grafik per bulan memerlukan backend dan data historis.')
-    );
-  }
+  document.querySelector('#btn-chart-period')?.addEventListener('click', () =>
+    showToast('Pilih periode: simulasi UI. Grafik historis memerlukan backend.')
+  );
+
+  // Quick Switch Role Sementara (Topbar)
+  document.querySelectorAll('[data-quick-role]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetRole = btn.dataset.quickRole;
+      const previousRoute = state.currentRoute;
+      const nextUser = quickSwitchRole(targetRole);
+      if (!nextUser) return;
+
+      const blocked = !canAccessRoute(nextUser.role, previousRoute);
+      if (blocked) state.currentRoute = 'Overview';
+      state.sidebarOpen = false;
+      renderApp();
+
+      if (blocked) {
+        showToast(`Switch ke ${nextUser.role} (${nextUser.name}) — dialihkan ke Overview karena "${previousRoute}" khusus Ketua Tim.`);
+      } else {
+        showToast(`Quick Switch (Demo): aktif sebagai ${nextUser.name} · ${nextUser.role}`);
+      }
+    });
+  });
+
+  // Logout Topbar & Sidebar
+  document.querySelector('#btn-logout')?.addEventListener('click', handleLogout);
+  document.querySelector('#btn-sidebar-logout')?.addEventListener('click', handleLogout);
 
   // Mobile Nav Toggle
   const toggleBtn = document.querySelector('#mobile-toggle');
@@ -231,7 +327,6 @@ function attachEventListeners() {
     });
   }
 
-  // Mobile backdrop close sidebar
   const backdrop = document.querySelector('#sidebar-backdrop');
   if (backdrop) {
     backdrop.addEventListener('click', () => {
@@ -241,15 +336,11 @@ function attachEventListeners() {
     });
   }
 
-  // Route Navigation Clicks
+  // Route Navigation Clicks (dengan guard RBAC)
   document.querySelectorAll('[data-route]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const targetRoute = btn.dataset.route;
-      state.currentRoute = targetRoute;
-      state.sidebarOpen = false;
-      renderApp();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      navigateTo(btn.dataset.route);
     });
   });
 
@@ -262,7 +353,7 @@ function attachEventListeners() {
     });
   });
 
-  // Global Search Input + Live Quick Results
+  // Global Search
   const searchInput = document.querySelector('#global-search');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
@@ -284,16 +375,12 @@ function attachEventListeners() {
     });
   }
 
-  // Dashboard New Content Modal Action
-  const btnDemoNew = document.querySelector('#btn-demo-new');
-  if (btnDemoNew) {
-    btnDemoNew.addEventListener('click', () => {
-      openNewContentModal(renderApp, showToast);
-    });
-  }
+  // Dashboard New Content Modal Action (Khusus Ketua Tim)
+  document.querySelector('#btn-demo-new')?.addEventListener('click', () => {
+    openNewContentModal(renderApp, showToast);
+  });
 }
 
-// Global keyboard shortcut Cmd+K / Ctrl+K & outside click close search dropdown
 document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
     const searchInput = document.querySelector('#global-search');
@@ -313,7 +400,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Add Toast Style dynamically
 const toastStyle = document.createElement('style');
 toastStyle.textContent = `
   .toast-notification {
@@ -333,6 +419,7 @@ toastStyle.textContent = `
     transform: translateY(12px);
     pointer-events: none;
     transition: opacity 0.25s ease, transform 0.25s ease;
+    max-width: min(420px, calc(100vw - 32px));
   }
   .toast-notification.show {
     opacity: 1;
@@ -341,16 +428,9 @@ toastStyle.textContent = `
 `;
 document.head.appendChild(toastStyle);
 
-// Custom navigation event (used by Notifications & Calendar detail modal)
-document.addEventListener('studioflow:navigate', (e) => {
+document.addEventListener('ymq:navigate', (e) => {
   const route = e.detail?.route;
-  if (route) {
-    state.currentRoute = route;
-    state.sidebarOpen  = false;
-    renderApp();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  if (route) navigateTo(route);
 });
 
-// Initial App Render
 renderApp();

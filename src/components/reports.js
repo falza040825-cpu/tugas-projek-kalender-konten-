@@ -1,16 +1,18 @@
 /**
- * Laporan — StudioFlow Fase 3 & QA Fase 4
+ * Laporan — Yayasan Motivator Qur'an Fase 3 & QA Fase 4
  * Ringkasan statistik per status, platform, anggota tim, dan periode bulanan
  * Tombol ekspor: feedback simulasi saja, tidak menghasilkan file server-side
  */
 
 import {
+  ROLES,
   reportPlatformData,
   reportMemberData,
   reportPeriodData,
   pipelineStages,
   pipelineItems,
   calendarItems,
+  getCurrentUser,
 } from '../data/mockData.js';
 import { escapeHtml } from '../utils/helpers.js';
 
@@ -38,15 +40,15 @@ function rateRing(rate) {
 
 function renderSummaryCards() {
   const totalPlanned = reportPlatformData.reduce((s, r) => s + r.planned, 0);
-  const totalDone    = reportPlatformData.reduce((s, r) => s + r.done, 0);
-  const totalLate    = reportPlatformData.reduce((s, r) => s + r.late, 0);
-  const avgRate      = Math.round(reportPlatformData.reduce((s, r) => s + r.rate, 0) / reportPlatformData.length);
+  const totalDone = reportPlatformData.reduce((s, r) => s + r.done, 0);
+  const totalLate = reportPlatformData.reduce((s, r) => s + r.late, 0);
+  const avgRate = Math.round(reportPlatformData.reduce((s, r) => s + r.rate, 0) / reportPlatformData.length);
 
   const cards = [
     { label: 'Total konten direncanakan', value: totalPlanned, kind: 'lavender', icon: '▤', delta: '+12.8%' },
-    { label: 'Konten selesai & tayang',   value: totalDone,    kind: 'sage',     icon: '✓', delta: '+8.6%' },
-    { label: 'Konten terlambat',          value: totalLate,    kind: 'rose',     icon: '⚑', delta: '-2.1%' },
-    { label: 'Ketepatan waktu rata-rata', value: `${avgRate}%`, kind: 'sand',    icon: '◷', delta: '' },
+    { label: 'Konten selesai & tayang', value: totalDone, kind: 'sage', icon: '✓', delta: '+8.6%' },
+    { label: 'Konten terlambat', value: totalLate, kind: 'rose', icon: '⚑', delta: '-2.1%' },
+    { label: 'Ketepatan waktu rata-rata', value: `${avgRate}%`, kind: 'sand', icon: '◷', delta: '' },
   ];
 
   return `
@@ -73,7 +75,7 @@ function renderStatusBreakdown() {
     icon: stage.icon,
     count: pipelineItems.filter(i => i.stage === stage.id).length,
   }));
-  const lateCount = calendarItems.filter(i => i.status === 'Terlambat').length;
+  const lateCount = calendarItems.filter(i => i.isOverdue || i.status === 'Terlambat').length;
   const maxCount = Math.max(1, ...stageCounts.map(s => s.count), lateCount);
 
   return `
@@ -195,9 +197,9 @@ function renderPeriodReport() {
           <span><i class="lg-done-bar" aria-hidden="true"></i> Selesai</span>
         </div>
         ${reportPeriodData.map(row => {
-          const totalPct = Math.round((row.total / maxTotal) * 100);
-          const doneRelPct = row.total > 0 ? Math.round((row.done / row.total) * 100) : 0;
-          return `
+    const totalPct = Math.round((row.total / maxTotal) * 100);
+    const doneRelPct = row.total > 0 ? Math.round((row.done / row.total) * 100) : 0;
+    return `
             <div class="period-col">
               <div class="period-bar-group">
                 <div class="period-bar-bg" style="height:${totalPct}%;" title="Target ${row.period}: ${row.total} konten">
@@ -208,13 +210,27 @@ function renderPeriodReport() {
               <div class="period-sub">${row.done}/${row.total} · ${doneRelPct}%</div>
             </div>
           `;
-        }).join('')}
+  }).join('')}
       </div>
     </div>
   `;
 }
 
 export function renderReports() {
+  const user = getCurrentUser();
+  if (user && user.role !== ROLES.KETUA_TIM) {
+    return `
+      <div class="placeholder-container">
+        <span class="placeholder-badge">AKSES DIBATASI (RBAC SIMULASI)</span>
+        <h2>Halaman Khusus Ketua Tim</h2>
+        <p>Halaman Laporan hanya dapat diakses oleh peran <strong>Ketua Tim</strong>.</p>
+        <div class="placeholder-actions">
+          <button type="button" class="btn-primary" data-route="Overview">← Kembali ke Overview</button>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="page-heading">
       <div>

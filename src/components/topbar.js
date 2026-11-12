@@ -1,13 +1,21 @@
-import { currentUser, notificationsData } from '../data/mockData.js';
+import {
+  getCurrentUser,
+  notificationsData,
+  availableRoles,
+  ROLES,
+} from '../data/mockData.js';
 import { escapeHtml } from '../utils/helpers.js';
 
 export function renderTopbar(currentRoute, globalSearchQuery = '') {
+  const user = getCurrentUser();
+  const role = user?.role || 'Copywriter';
   const unreadCount = notificationsData.filter(n => !n.read).length;
+  const isKetua = role === ROLES.KETUA_TIM;
 
   return `
     <header class="topbar">
       <div class="topbar-left">
-        <button class="mobile-nav-toggle" id="mobile-toggle" aria-label="Buka/tutup menu navigasi">
+        <button type="button" class="mobile-nav-toggle" id="mobile-toggle" aria-label="Buka/tutup menu navigasi">
           ☰
         </button>
         <div class="breadcrumb" aria-label="Breadcrumb navigasi">
@@ -16,6 +24,23 @@ export function renderTopbar(currentRoute, globalSearchQuery = '') {
       </div>
 
       <div class="topbar-right">
+        <div class="quick-switch-wrap" role="group" aria-label="Quick Switch Role sementara untuk pengujian">
+          <span class="quick-switch-label">Switch (Demo):</span>
+          <div class="quick-switch-pills">
+            ${availableRoles.map(r => `
+              <button
+                type="button"
+                class="quick-switch-pill ${role === r ? 'active' : ''}"
+                data-quick-role="${escapeHtml(r)}"
+                aria-pressed="${role === r ? 'true' : 'false'}"
+                title="Ganti cepat ke tampilan peran ${escapeHtml(r)}"
+              >
+                ${escapeHtml(r)}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
         <div class="topbar-search-wrap">
           <label class="topbar-search">
             <span aria-hidden="true">⌕</span>
@@ -32,13 +57,33 @@ export function renderTopbar(currentRoute, globalSearchQuery = '') {
           <div id="global-search-results" class="global-search-results" role="region" aria-label="Hasil pencarian cepat"></div>
         </div>
 
-        <button class="icon-button" data-route="Notifikasi" aria-label="Lihat notifikasi${unreadCount > 0 ? ` (${unreadCount} belum dibaca)` : ''}">
+        <button type="button" class="icon-button" data-route="Notifikasi" aria-label="Lihat notifikasi${unreadCount > 0 ? ` (${unreadCount} belum dibaca)` : ''}">
           ♧
           ${unreadCount > 0 ? '<span class="badge-dot" aria-hidden="true"></span>' : ''}
         </button>
 
-        <button class="role-badge-pill" data-route="Pengguna & akses" title="Simulasi peran aktif — klik untuk ubah peran di Pengguna & Akses" aria-label="Peran aktif: ${escapeHtml(currentUser.role)} (simulasi)">
-          ${escapeHtml(currentUser.role)} <span style="font-size:9px;opacity:0.65;margin-left:4px;font-weight:700;">DEMO</span>
+        ${isKetua ? `
+          <button
+            type="button"
+            class="role-badge-pill"
+            data-route="Manajemen Tim"
+            title="Kelola anggota tim & hak akses"
+            aria-label="Peran aktif: ${escapeHtml(role)} — buka Manajemen Tim"
+          >
+            ${escapeHtml(role)} <span class="role-demo-tag">SUPER ADMIN</span>
+          </button>
+        ` : `
+          <span
+            class="role-badge-pill role-badge-static"
+            title="Peran aktif terdeteksi dari akun login (simulasi)"
+            aria-label="Peran aktif: ${escapeHtml(role)}"
+          >
+            ${escapeHtml(role)}
+          </span>
+        `}
+
+        <button type="button" class="btn-secondary btn-logout-topbar" id="btn-logout" aria-label="Keluar dari sesi login">
+          Keluar
         </button>
       </div>
     </header>

@@ -1,14 +1,14 @@
 # AGENTS.md — Kontrak Kerja Agen
 
 ## Misi
-Membangun front-end StudioFlow sesuai tiga dokumen SOT: `docs/PRD.md`, `docs/UI_GUIDELINE.md`, dan `docs/IMPLEMENTATION_PLAN.md`.
+Membangun front-end **Yayasan Motivator Qur'an Content Operations** sesuai tiga dokumen SOT: `docs/PRD.md`, `docs/UI_GUIDELINE.md`, dan `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Aturan wajib
 1. Baca ketiga dokumen SOT sebelum mengubah kode.
 2. Jangan mengerjakan di luar konsep, fitur, visual, dan fase yang disetujui.
 3. Gunakan Vite + vanilla JavaScript/CSS kecuali pengguna menyetujui perubahan stack.
-4. Data harus dummy sampai backend/data nyata secara eksplisit disetujui.
-5. Jangan mengklaim autentikasi, upload, email, ekspor, sinkronisasi, atau penyimpanan server bekerja bila hanya simulasi UI.
+4. Data harus dummy sampai backend/data nyata secara eksplisit disetujui; simulasi login dan sesi RBAC tahap front-end boleh menggunakan `state`/`localStorage` sesuai `IMPLEMENTATION_PLAN.md`.
+5. Jangan mengklaim autentikasi keamanan server-side, upload, email, ekspor, sinkronisasi, atau penyimpanan server bekerja bila hanya simulasi UI/`localStorage`.
 6. Jangan menambahkan dependency, API, analytics, backend, atau fitur baru tanpa persetujuan.
 7. Jika dokumen konflik, requirement ambigu, atau keputusan berdampak pada scope, hentikan bagian terkait dan ajukan pertanyaan singkat.
 8. Hemat token: gunakan perubahan kecil, fokus pada fase aktif, jangan mengulang dokumen SOT di setiap respons.

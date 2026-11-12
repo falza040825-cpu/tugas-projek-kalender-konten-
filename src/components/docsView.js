@@ -20,7 +20,7 @@ export function renderDocsView(activeDocKey = 'PRD') {
       <div class="panel" style="padding: 0; overflow: hidden;">
         <div style="padding: 18px 20px 12px; border-bottom: 1px solid var(--color-border);">
           <h3 style="font-size: 14px; margin: 0;">Dokumen Acuan</h3>
-          <span style="font-size: 10px; color: var(--color-ink-muted);">Versi 0.1 · Draft SOT</span>
+          <span style="font-size: 10px; color: var(--color-ink-muted);">Versi 0.3 · SOT Aktif</span>
         </div>
 
         <div>

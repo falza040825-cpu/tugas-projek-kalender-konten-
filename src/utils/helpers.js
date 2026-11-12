@@ -33,3 +33,24 @@ export function formatScheduleTileDate(dateStr) {
   return `${day} ${month}`;
 }
 
+export function isValidHttpUrl(value) {
+  if (!value || typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  if (!/^https?:\/\//i.test(trimmed)) return false;
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+export function normalizePlatformClass(platform) {
+  const p = String(platform || '').toLowerCase();
+  if (p === 'instagram') return 'plat-instagram';
+  if (p === 'tiktok') return 'plat-tiktok';
+  if (p === 'youtube') return 'plat-youtube';
+  return '';
+}
+
+

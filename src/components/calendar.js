@@ -1,16 +1,23 @@
 /**
- * Kalender Konten — StudioFlow Fase 2 & QA Fase 4
+ * Kalender Konten — Yayasan Motivator Qur'an (RBAC Conditional UI)
  * Tampilan bulanan/mingguan/harian · Filter platform, kategori, status
- * Jadwal produksi & publikasi · Penanda jadwal berdekatan/terlambat
+ * Ketua Tim melihat seluruh jadwal & tombol buat baru; Copywriter & Editor terfilter sesuai peran.
  */
 
-import { calendarItems } from '../data/mockData.js';
-import { openNewContentModal } from './contentModal.js';
+import {
+  ROLES,
+  WORKFLOW_STATUSES,
+  calendarItems,
+  getCurrentUser,
+  getRolePermissions,
+  isCopywriterQueueItem,
+  isEditorQueueItem,
+} from '../data/mockData.js';
+import { openNewContentModal, openContentWorkflowModal } from './contentModal.js';
 import { escapeHtml } from '../utils/helpers.js';
 
-// State lokal per sesi (tidak persist)
 let calState = {
-  view: 'monthly',       // 'monthly' | 'weekly' | 'daily'
+  view: 'monthly',
   filterPlatform: 'Semua',
   filterCategory: 'Semua',
   filterStatus: 'Semua',
@@ -19,17 +26,28 @@ let calState = {
 
 const PLATFORMS  = ['Semua', 'Instagram', 'TikTok', 'YouTube'];
 const CATEGORIES = ['Semua', 'Edukasi', 'Promosi', 'Informasi', 'Hiburan'];
-const STATUSES   = ['Semua', 'Ide', 'Naskah', 'Dalam proses', 'Review', 'Revisi', 'Siap tayang', 'Dipublikasikan', 'Terlambat'];
+const COPYWRITER_STATUSES = ['Semua', 'Ide', 'Perlu Naskah', 'Revisi Naskah'];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function getRoleCalendarBase(role) {
+  if (role === ROLES.COPYWRITER) return calendarItems.filter(isCopywriterQueueItem);
+  if (role === ROLES.EDITOR) return calendarItems.filter(isEditorQueueItem);
+  return calendarItems;
+}
 
-function applyFilters(items) {
+function getAvailableStatuses(role) {
+  if (role === ROLES.COPYWRITER) return COPYWRITER_STATUSES;
+  if (role === ROLES.EDITOR) return ['Siap Edit'];
+  return ['Semua', ...WORKFLOW_STATUSES];
+}
+
+function applyFilters(items, role) {
+  const validStatuses = getAvailableStatuses(role);
+  const activeStatus = validStatuses.includes(calState.filterStatus) ? calState.filterStatus : validStatuses[0];
+
   return items.filter(item => {
     const okP = calState.filterPlatform === 'Semua' || item.platform === calState.filterPlatform;
     const okC = calState.filterCategory === 'Semua' || item.category === calState.filterCategory;
-    const okS = calState.filterStatus   === 'Semua' || item.status   === calState.filterStatus;
+    const okS = activeStatus === 'Semua' || item.status === activeStatus;
     return okP && okC && okS;
   });
 }
@@ -46,7 +64,7 @@ function formatDateStr(d) {
 }
 
 function isTodayStr(dateStr) {
-  return dateStr === '2026-10-16'; // referensi dummy "hari ini"
+  return dateStr === '2026-10-16';
 }
 
 function formatWeekLabel(base) {
@@ -59,12 +77,7 @@ function formatWeekLabel(base) {
   return `Pekan ${startPart} – ${endPart}`;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sub-render: kartu konten mini di kalender
-// ─────────────────────────────────────────────────────────────────────────────
-
 function calCard(item) {
-  const isLate = item.status === 'Terlambat';
   return `
     <button
       type="button"
@@ -74,19 +87,15 @@ function calCard(item) {
       aria-label="${escapeHtml(item.title)}, ${escapeHtml(item.platform)}, status ${escapeHtml(item.status)}"
     >
       <span class="cal-event-dot" aria-hidden="true"></span>
-      <span class="cal-event-text">${isLate ? '⚑ ' : ''}${escapeHtml(item.title)}</span>
+      <span class="cal-event-text">${item.isOverdue ? '⚑ ' : ''}${escapeHtml(item.title)}</span>
     </button>
   `;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tampilan Bulanan
-// ─────────────────────────────────────────────────────────────────────────────
-
 function renderMonthly(items) {
   const year  = calState.focusDate.getFullYear();
   const month = calState.focusDate.getMonth();
-  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const monthName = calState.focusDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
@@ -102,7 +111,7 @@ function renderMonthly(items) {
     const dayItems = itemsOnDate(items, dateStr);
     const isToday = isTodayStr(dateStr);
     const isDense = dayItems.length >= 2;
-    const hasLate = dayItems.some(i => i.status === 'Terlambat');
+    const hasLate = dayItems.some(i => i.isOverdue);
     const events = dayItems.slice(0, 2).map(calCard).join('');
     const more = dayItems.length > 2 ? `<div class="cal-more">+${dayItems.length - 2} lagi</div>` : '';
 
@@ -133,13 +142,9 @@ function renderMonthly(items) {
   `;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tampilan Mingguan (7 hari mulai dari Senin pekan ini)
-// ─────────────────────────────────────────────────────────────────────────────
-
 function renderWeekly(items) {
   const base = new Date(calState.focusDate);
-  const dow = base.getDay() === 0 ? 6 : base.getDay() - 1; // Senin=0
+  const dow = base.getDay() === 0 ? 6 : base.getDay() - 1;
   base.setDate(base.getDate() - dow);
 
   const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
@@ -174,10 +179,6 @@ function renderWeekly(items) {
   `;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tampilan Harian (Menampilkan Jadwal Produksi & Publikasi)
-// ─────────────────────────────────────────────────────────────────────────────
-
 function renderDaily(items) {
   const dateStr = formatDateStr(calState.focusDate);
   const pubItems  = items.filter(i => i.pubDate === dateStr).map(i => ({ ...i, slotType: 'Publikasi' }));
@@ -193,11 +194,11 @@ function renderDaily(items) {
             <div class="cal-daily-platform">${escapeHtml(item.platform)} · ${escapeHtml(item.category)}</div>
             <strong>${escapeHtml(item.title)}</strong>
             <div class="cal-daily-meta">
-              <span class="status-pill ${item.statusClass}">${item.status === 'Terlambat' ? '⚑ ' : ''}${escapeHtml(item.status)}</span>
+              <span class="status-pill ${item.statusClass}">${item.isOverdue ? '⚑ ' : ''}${escapeHtml(item.status)}</span>
               <span class="assignee-chip">
                 <span class="mini-avatar">${escapeHtml(item.initials)}</span> ${escapeHtml(item.owner)}
               </span>
-              <button type="button" class="btn-secondary cal-detail-trigger" data-cal-id="${escapeHtml(item.id)}" style="margin-left:auto;padding:4px 10px;font-size:11px;">Detail</button>
+              <button type="button" class="btn-secondary cal-detail-trigger" data-cal-id="${escapeHtml(item.id)}" style="margin-left:auto;padding:4px 10px;font-size:11px;">Buka</button>
             </div>
           </div>
         </div>
@@ -214,13 +215,9 @@ function renderDaily(items) {
   `;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Render tabel ringkasan daftar konten
-// ─────────────────────────────────────────────────────────────────────────────
-
-function renderContentList(items) {
+function renderContentList(items, role) {
   if (items.length === 0) {
-    return `<div class="cal-empty-state">Tidak ada konten yang cocok dengan filter aktif.</div>`;
+    return `<div class="cal-empty-state">Tidak ada konten pada antrean <strong>${escapeHtml(role)}</strong> yang cocok dengan filter aktif.</div>`;
   }
   return `
     <div class="content-list-table">
@@ -231,7 +228,7 @@ function renderContentList(items) {
         <span>TGL PRODUKSI</span>
         <span>TGL TAYANG</span>
         <span>STATUS</span>
-        <span>PEMILIK</span>
+        <span>AKSI</span>
       </div>
       ${items.map(item => `
         <div class="content-list-row">
@@ -239,11 +236,12 @@ function renderContentList(items) {
           <div><span class="platform-chip plat-${item.platform.toLowerCase()}">${escapeHtml(item.platform)}</span></div>
           <div class="cl-muted" data-label="Kategori">${escapeHtml(item.category)}</div>
           <div class="cl-muted" data-label="Produksi">${escapeHtml(item.prodDate)}</div>
-          <div class="cl-muted ${item.status === 'Terlambat' ? 'cl-late' : ''}" data-label="Tayang">${escapeHtml(item.pubDate)}</div>
-          <div><span class="status-pill ${item.statusClass}">${item.status === 'Terlambat' ? '⚑ ' : ''}${escapeHtml(item.status)}</span></div>
-          <div class="assignee">
-            <span class="mini-avatar">${escapeHtml(item.initials)}</span>
-            <span class="cl-muted">${escapeHtml(item.owner)}</span>
+          <div class="cl-muted ${item.isOverdue ? 'cl-late' : ''}" data-label="Tayang">${escapeHtml(item.pubDate)}</div>
+          <div><span class="status-pill ${item.statusClass}">${item.isOverdue ? '⚑ ' : ''}${escapeHtml(item.status)}</span></div>
+          <div>
+            <button type="button" class="btn-secondary" data-cal-id="${escapeHtml(item.id)}" style="padding:4px 10px;font-size:11px;">
+              ${role === ROLES.COPYWRITER ? 'Naskah' : role === ROLES.EDITOR ? 'Edit' : 'Detail'}
+            </button>
           </div>
         </div>
       `).join('')}
@@ -251,69 +249,14 @@ function renderContentList(items) {
   `;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Modal Detail Item Kalender
-// ─────────────────────────────────────────────────────────────────────────────
-
-function openCalendarDetailModal(item) {
-  const modalContainer = document.querySelector('#modal-container');
-  if (!modalContainer || !item) return;
-
-  modalContainer.innerHTML = `
-    <div class="modal-backdrop" id="cal-detail-backdrop" role="dialog" aria-modal="true" aria-labelledby="cal-detail-title">
-      <div class="panel modal-card" style="width:min(460px,100%);">
-        <button type="button" class="modal-close-btn" id="close-cal-detail" aria-label="Tutup detail">✕</button>
-        <span class="eyebrow">DETAIL JADWAL KONTEN</span>
-        <h2 id="cal-detail-title" style="font-size:19px;margin:6px 0 12px;">${escapeHtml(item.title)}</h2>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <span class="platform-chip plat-${item.platform.toLowerCase()}">${escapeHtml(item.platform)}</span>
-          <span class="status-pill ${item.statusClass}">${item.status === 'Terlambat' ? '⚑ ' : ''}${escapeHtml(item.status)}</span>
-          <span class="filter-summary-chip">${escapeHtml(item.category)}</span>
-        </div>
-        <div class="detail-kv-grid">
-          <div><span class="filter-label">TGL PRODUKSI</span><strong>${escapeHtml(item.prodDate)}</strong></div>
-          <div><span class="filter-label">TGL PUBLIKASI</span><strong>${escapeHtml(item.pubDate)}</strong></div>
-          <div><span class="filter-label">PEMILIK</span><strong>${escapeHtml(item.owner)}</strong></div>
-          <div><span class="filter-label">KETERANGAN</span><strong>Data dummy sesi</strong></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" id="goto-pipeline-btn">Lihat Alur Produksi ↗</button>
-          <button type="button" class="btn-primary" id="ok-cal-detail">Tutup</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const onKeyDown = (e) => { if (e.key === 'Escape') close(); };
-  const close = () => {
-    document.removeEventListener('keydown', onKeyDown);
-    modalContainer.innerHTML = '';
-  };
-
-  document.addEventListener('keydown', onKeyDown);
-  document.querySelector('#close-cal-detail')?.addEventListener('click', close);
-  document.querySelector('#ok-cal-detail')?.addEventListener('click', close);
-  document.querySelector('#cal-detail-backdrop')?.addEventListener('click', (e) => {
-    if (e.target.id === 'cal-detail-backdrop') close();
-  });
-  document.querySelector('#goto-pipeline-btn')?.addEventListener('click', () => {
-    close();
-    document.dispatchEvent(new CustomEvent('studioflow:navigate', { detail: { route: 'Alur produksi' } }));
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Render filter bar
-// ─────────────────────────────────────────────────────────────────────────────
-
 function filterBtn(id, values, active, label) {
   return `
     <div class="filter-group">
       <span class="filter-label">${label}</span>
       <div class="filter-pills" id="${id}">
         ${values.map(v => `
-          <button type="button" class="filter-pill ${v === active ? 'active' : ''}" data-filter-group="${id}" data-filter-val="${v}">
-            ${v}
+          <button type="button" class="filter-pill ${v === active ? 'active' : ''}" data-filter-group="${id}" data-filter-val="${escapeHtml(v)}">
+            ${escapeHtml(v)}
           </button>
         `).join('')}
       </div>
@@ -321,12 +264,14 @@ function filterBtn(id, values, active, label) {
   `;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main render
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function renderCalendar() {
-  const filtered = applyFilters(calendarItems);
+  const user = getCurrentUser();
+  const role = user?.role || ROLES.COPYWRITER;
+  const perms = getRolePermissions(role);
+  const roleItems = getRoleCalendarBase(role);
+  const filtered = applyFilters(roleItems, role);
+  const availableStatuses = getAvailableStatuses(role);
+  const activeStatus = availableStatuses.includes(calState.filterStatus) ? calState.filterStatus : availableStatuses[0];
 
   let viewContent = '';
   if (calState.view === 'monthly') viewContent = renderMonthly(filtered);
@@ -336,19 +281,29 @@ export function renderCalendar() {
   const activeFiltersCount = [
     calState.filterPlatform !== 'Semua',
     calState.filterCategory !== 'Semua',
-    calState.filterStatus !== 'Semua',
+    role !== ROLES.EDITOR && activeStatus !== 'Semua',
   ].filter(Boolean).length;
+
+  const scopeDesc = role === ROLES.COPYWRITER
+    ? `Antrean jadwal naskah Copywriter · ${filtered.length} dari ${roleItems.length} item`
+    : role === ROLES.EDITOR
+      ? `Jadwal khusus item "Siap Edit" Editor · ${filtered.length} dari ${roleItems.length} item`
+      : `Seluruh jadwal produksi & publikasi tim · ${filtered.length} dari ${roleItems.length} item`;
 
   return `
     <div class="page-heading">
       <div>
-        <div class="eyebrow">WORKSPACE / KALENDER KONTEN</div>
+        <div class="eyebrow">WORKSPACE / KALENDER KONTEN (${escapeHtml(role.toUpperCase())})</div>
         <h1>Kalender Konten</h1>
-        <p>Jadwal produksi dan publikasi konten tim · ${filtered.length} dari ${calendarItems.length} item</p>
+        <p>${escapeHtml(scopeDesc)}</p>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         ${activeFiltersCount > 0 ? `<button type="button" class="btn-secondary" id="cal-clear-filters">Hapus filter (${activeFiltersCount})</button>` : ''}
-        <button type="button" class="btn-primary" id="btn-cal-new"><span>＋</span> Konten Baru (Demo)</button>
+        ${perms.canCreateContent ? `
+          <button type="button" class="btn-primary" id="btn-cal-new"><span>＋</span> Konten Baru</button>
+        ` : `
+          <span class="filter-summary-chip">Tampilan Peran: ${escapeHtml(role)}</span>
+        `}
       </div>
     </div>
 
@@ -359,8 +314,8 @@ export function renderCalendar() {
         <button type="button" class="view-toggle-btn ${calState.view === 'weekly'  ? 'active' : ''}" id="cal-view-weekly"  data-cal-view="weekly">Mingguan</button>
         <button type="button" class="view-toggle-btn ${calState.view === 'daily'   ? 'active' : ''}" id="cal-view-daily"   data-cal-view="daily">Harian</button>
       </div>
-      <span class="filter-summary-chip" style="${activeFiltersCount === 0 ? 'opacity:0.65' : ''}">
-        ${activeFiltersCount > 0 ? `${activeFiltersCount} filter aktif` : 'Tampil semua'}
+      <span class="filter-summary-chip" style="${activeFiltersCount === 0 ? 'opacity:0.75' : ''}">
+        ${activeFiltersCount > 0 ? `${activeFiltersCount} filter aktif` : (role === ROLES.KETUA_TIM ? 'Tampil semua status' : `Fokus: ${role}`)}
       </span>
     </div>
 
@@ -369,7 +324,7 @@ export function renderCalendar() {
       <div class="filter-row">
         ${filterBtn('cal-filter-platform', PLATFORMS,  calState.filterPlatform, 'Platform')}
         ${filterBtn('cal-filter-category', CATEGORIES, calState.filterCategory, 'Kategori')}
-        ${filterBtn('cal-filter-status',   STATUSES,   calState.filterStatus,   'Status')}
+        ${role !== ROLES.EDITOR ? filterBtn('cal-filter-status', availableStatuses, activeStatus, 'Status') : ''}
       </div>
     </div>
 
@@ -384,28 +339,24 @@ export function renderCalendar() {
     <div class="panel" style="margin-bottom:20px;">
       <div class="panel-head">
         <div>
-          <h2>Daftar Konten</h2>
-          <p>Ringkasan semua item yang sesuai filter aktif · Penanda padat tampil jika ≥2 jadwal di tanggal sama</p>
+          <h2>Daftar Konten (${escapeHtml(role)})</h2>
+          <p>Klik tombol aksi pada item untuk membuka ruang kerja sesuai peran aktif</p>
         </div>
-        <span class="demo-badge">DATA DUMMY</span>
+        <span class="demo-badge">${filtered.length} ITEM</span>
       </div>
-      ${renderContentList(filtered)}
+      ${renderContentList(filtered, role)}
     </div>
 
     <div class="demo-banner">
       <span class="demo-banner-icon">✳</span>
       <div class="demo-banner-content">
-        <strong>Kalender Konten — Simulasi Lokal</strong>
-        <p>Filter, tampilan bulanan/mingguan/harian, dan penambahan item bekerja pada data dummy sesi lokal. Tidak ada koneksi backend.</p>
+        <strong>Kalender Konten RBAC — Simulasi Lokal</strong>
+        <p>Pembuatan kartu ide konten baru dikhususkan bagi Ketua Tim. Copywriter dan Editor melihat item relevan sesuai alur tugas masing-masing.</p>
       </div>
       <span class="demo-badge">SIMULASI</span>
     </div>
   `;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Event binding
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function attachCalendarEvents(renderApp, showToast) {
   document.querySelectorAll('[data-cal-view]').forEach(btn => {
@@ -453,8 +404,7 @@ export function attachCalendarEvents(renderApp, showToast) {
 
   document.querySelectorAll('[data-cal-id]').forEach(el => {
     el.addEventListener('click', () => {
-      const item = calendarItems.find(i => i.id === el.dataset.calId);
-      if (item) openCalendarDetailModal(item);
+      openContentWorkflowModal(el.dataset.calId, renderApp, showToast);
     });
   });
 

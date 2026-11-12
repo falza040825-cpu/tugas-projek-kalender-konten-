@@ -1,16 +1,16 @@
 /**
- * Aset & File — StudioFlow Fase 3 & QA Fase 4
- * Daftar aset dummy dengan filter tipe, grid/list toggle, tautan placeholder
+ * Aset & File — Yayasan Motivator Qur'an Fase 3–5
+ * Menampilkan tautan Raw Footage Google Drive, Output Hasil Editan dari konten aktif, dan berkas dummy
  */
 
-import { assetsData } from '../data/mockData.js';
-import { escapeHtml } from '../utils/helpers.js';
+import { assetsData, contentItems } from '../data/mockData.js';
+import { escapeHtml, isValidHttpUrl, normalizePlatformClass } from '../utils/helpers.js';
 
 const TYPES = ['Semua', 'Desain', 'Video', 'Gambar', 'Dokumen', 'Audio'];
 
 let assetState = {
   filterType: 'Semua',
-  viewMode: 'list', // 'list' | 'grid'
+  viewMode: 'list',
   searchQuery: '',
 };
 
@@ -38,6 +38,46 @@ function applyAssetFilters(items) {
       item.project.toLowerCase().includes(assetState.searchQuery);
     return okT && okQ;
   });
+}
+
+function renderLinkedContentLinks() {
+  const linked = contentItems.filter(c => isValidHttpUrl(c.rawFootageUrl) || isValidHttpUrl(c.outputUrl));
+  if (linked.length === 0) return '';
+
+  return `
+    <div class="panel" style="margin-bottom:20px;">
+      <div class="panel-head">
+        <div>
+          <h2>Tautan Raw Footage & Hasil Editan Konten</h2>
+          <p>Sinkron otomatis dari tautan Google Drive (Ketua Tim) & Output URL (Editor) di sesi lokal</p>
+        </div>
+        <span class="demo-badge">${linked.length} KONTEN</span>
+      </div>
+      <div class="asset-links-grid">
+        ${linked.map(item => `
+          <div class="asset-link-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
+              <span class="platform-chip ${normalizePlatformClass(item.platform)}">${escapeHtml(item.platform)}</span>
+              <span style="font-size:10px;font-weight:700;color:var(--color-ink-muted);">${escapeHtml(item.status)}</span>
+            </div>
+            <strong style="font-size:13px;color:var(--color-ink);display:block;margin-bottom:8px;">${escapeHtml(item.title)}</strong>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;">
+              ${isValidHttpUrl(item.rawFootageUrl) ? `
+                <a href="${escapeHtml(item.rawFootageUrl)}" target="_blank" rel="noopener noreferrer" class="wf-ext-link">
+                  📁 Raw Footage (Google Drive) ↗
+                </a>
+              ` : `<span class="cl-muted">📁 Raw Footage: belum dilampirkan</span>`}
+              ${isValidHttpUrl(item.outputUrl) ? `
+                <a href="${escapeHtml(item.outputUrl)}" target="_blank" rel="noopener noreferrer" class="wf-ext-link">
+                  🎬 Hasil Editan (Output URL) ↗
+                </a>
+              ` : `<span class="cl-muted">🎬 Output: menunggu proses Editor</span>`}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function renderAssetListRow(item) {
@@ -123,10 +163,12 @@ export function renderAssets() {
       <div>
         <div class="eyebrow">WORKSPACE / ASET & FILE</div>
         <h1>Aset & File</h1>
-        <p id="asset-count-info">Daftar berkas dummy terkait konten · ${filtered.length} dari ${total} aset · Unggahan nyata di luar lingkup prototipe</p>
+        <p id="asset-count-info">Tautan Google Drive produksi & berkas template dummy · ${filtered.length} dari ${total} file</p>
       </div>
       <button type="button" class="btn-primary" id="btn-asset-upload"><span>＋</span> Unggah (Demo)</button>
     </div>
+
+    ${renderLinkedContentLinks()}
 
     <!-- Filter & Controls -->
     <div class="panel" style="margin-bottom:20px;padding:16px 20px;">
@@ -166,7 +208,7 @@ export function renderAssets() {
       <span class="demo-banner-icon">✳</span>
       <div class="demo-banner-content">
         <strong>Aset & File — Simulasi Lokal</strong>
-        <p>Semua berkas adalah data dummy. Tautan "Buka ↗" adalah placeholder. Unggahan nyata memerlukan storage backend.</p>
+        <p>Tautan Google Drive/Output dapat diisi di ruang kerja tugas/konten. Berkas di bawah adalah placeholder demo tanpa unggah server.</p>
       </div>
       <span class="demo-badge">SIMULASI</span>
     </div>
@@ -205,7 +247,7 @@ export function attachAssetsEvents(renderApp, showToast) {
     const panelEl = document.querySelector('#asset-display-panel');
     const countEl = document.querySelector('#asset-count-info');
     if (panelEl) panelEl.innerHTML = renderAssetDisplay(filtered);
-    if (countEl) countEl.textContent = `Daftar berkas dummy terkait konten · ${filtered.length} dari ${assetsData.length} aset · Unggahan nyata di luar lingkup prototipe`;
+    if (countEl) countEl.textContent = `Tautan Google Drive produksi & berkas template dummy · ${filtered.length} dari ${assetsData.length} file`;
     attachAssetDisplayEvents(showToast);
   });
 

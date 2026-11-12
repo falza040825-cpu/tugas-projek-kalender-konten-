@@ -1,4 +1,4 @@
-/* Layout Shell - StudioFlow (Desktop, Tablet, Mobile) */
+/* Layout Shell - Yayasan Motivator Qur'an (Desktop, Tablet, Mobile) */
 
 * {
   box-sizing: border-box;
@@ -60,22 +60,24 @@ button {
 .brand-mark {
   width: 38px;
   height: 38px;
+  flex-shrink: 0;
   border-radius: var(--radius-control);
   background: var(--grad-gold);
   color: #4A0D12;
   display: grid;
   place-items: center;
   font-weight: 800;
-  font-size: 22px;
+  font-size: 15px;
+  letter-spacing: -0.4px;
   box-shadow: 0 2px 12px rgba(201, 147, 18, 0.4);
 }
 
 .brand-info strong {
   display: block;
-  font-size: 17px;
-  letter-spacing: -0.5px;
+  font-size: 14px;
+  letter-spacing: -0.3px;
   color: #FFFFFF;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .brand-info small {
@@ -262,6 +264,27 @@ button {
   font-size: 14px;
 }
 
+.sidebar-logout-btn {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(220, 38, 38, 0.45);
+  border-color: var(--color-gold-mid);
+  color: #FFFFFF;
+}
+
 /* Main Area Layout */
 .main-area {
   flex: 1;
@@ -272,13 +295,15 @@ button {
 
 /* Topbar Styling */
 .topbar {
-  height: 72px;
+  min-height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 10px 28px;
   border-bottom: 1px solid var(--color-border);
-  background-color: rgba(255, 255, 255, 0.94);
+  background-color: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
@@ -322,7 +347,72 @@ button {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.quick-switch-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.quick-switch-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  padding-left: 6px;
+  white-space: nowrap;
+}
+
+.quick-switch-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.quick-switch-pill {
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-ink-secondary);
+  background: transparent;
+  white-space: nowrap;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.quick-switch-pill:hover {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.quick-switch-pill.active {
+  background: var(--grad-red);
+  color: #FFFFFF;
+  box-shadow: 0 1px 6px rgba(185, 28, 28, 0.25);
+}
+
+.role-demo-tag {
+  font-size: 9px;
+  opacity: 0.78;
+  margin-left: 4px;
+  font-weight: 800;
+}
+
+.role-badge-static {
+  cursor: default;
+}
+
+.btn-logout-topbar {
+  padding: 6px 12px;
+  font-size: 11px;
+  height: 36px;
 }
 
 .topbar-search-wrap {
@@ -482,6 +572,15 @@ button {
 }
 
 /* Responsive Styles */
+@media (max-width: 1200px) {
+  .quick-switch-label {
+    display: none;
+  }
+  .topbar-search {
+    width: 190px;
+  }
+}
+
 @media (max-width: 1024px) {
   .sidebar {
     width: 220px;
@@ -491,7 +590,7 @@ button {
     padding: 24px 20px;
   }
   .topbar {
-    padding: 0 20px;
+    padding: 10px 20px;
   }
 }
 
@@ -512,17 +611,24 @@ button {
     transform: translateX(0);
   }
   .topbar-search {
-    width: 180px;
+    width: 165px;
   }
 }
 
 @media (max-width: 540px) {
   .topbar {
-    height: 60px;
-    padding: 0 16px;
+    height: auto;
+    padding: 10px 14px;
   }
   .topbar-search-wrap,
   .topbar-search {
+    display: none;
+  }
+  .quick-switch-pill {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  .role-badge-pill {
     display: none;
   }
   .page-content {
