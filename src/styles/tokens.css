@@ -2,7 +2,8 @@
 
 :root {
   /* ── Canvas & Surfaces ── */
-  --color-canvas: #FAF6F4;
+  --color-canvas: #FAF6F0;
+  --color-active-cutout: #FAF6F0;
   --color-surface: #FFFFFF;
   --color-surface-elevated: #FFFBF8;
   --color-surface-subtle: #FDF4F2;

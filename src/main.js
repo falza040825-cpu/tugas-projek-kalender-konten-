@@ -41,6 +41,13 @@ let state = {
   currentRoute: 'Overview',
   activeDocKey: 'PRD',
   sidebarOpen: false,
+  sidebarCollapsed: (function() {
+    try {
+      return localStorage.getItem('ymq_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  })(),
   globalSearchQuery: '',
 };
 
@@ -135,7 +142,7 @@ function renderApp() {
 
   appContainer.innerHTML = `
     <div class="app-shell">
-      ${renderSidebar(state.currentRoute)}
+      ${renderSidebar(state.currentRoute, state.sidebarCollapsed)}
       <div id="sidebar-backdrop" style="display:none;position:fixed;inset:0;background:rgba(74,13,18,0.45);z-index:15;" aria-hidden="true"></div>
       <main class="main-area">
         ${renderTopbar(state.currentRoute, state.globalSearchQuery)}
@@ -282,6 +289,48 @@ function handleLogout() {
 }
 
 function attachEventListeners() {
+  // Sidebar Expand / Collapse Toggle (Glassy Dock)
+  const toggleCollapse = () => {
+    state.sidebarCollapsed = !state.sidebarCollapsed;
+    try {
+      localStorage.setItem('ymq_sidebar_collapsed', String(state.sidebarCollapsed));
+    } catch {}
+
+    const sidebarEl = document.querySelector('#sidebar');
+    if (sidebarEl) {
+      sidebarEl.classList.toggle('collapsed', state.sidebarCollapsed);
+      sidebarEl.setAttribute('data-collapsed', String(state.sidebarCollapsed));
+
+      const toggleIcon = sidebarEl.querySelector('.toggle-icon');
+      if (toggleIcon) toggleIcon.textContent = state.sidebarCollapsed ? '›' : '‹';
+
+      const toggleBtn = sidebarEl.querySelector('#btn-sidebar-toggle');
+      if (toggleBtn) {
+        toggleBtn.title = state.sidebarCollapsed ? 'Perluas sidebar (⌘B)' : 'Ciutkan sidebar (⌘B)';
+        toggleBtn.setAttribute('aria-label', state.sidebarCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar');
+        const tt = toggleBtn.querySelector('.sidebar-tooltip');
+        if (tt) tt.textContent = state.sidebarCollapsed ? 'Expand ⌘B' : 'Collapse ⌘B';
+      }
+    } else {
+      renderApp();
+    }
+  };
+
+  document.querySelector('#btn-sidebar-toggle')?.addEventListener('click', toggleCollapse);
+  document.querySelector('#btn-sidebar-collapse')?.addEventListener('click', toggleCollapse);
+  document.querySelector('#btn-sidebar-expand')?.addEventListener('click', toggleCollapse);
+
+  // In-Sidebar Search Trigger
+  const triggerGlobalSearch = () => {
+    const searchInput = document.querySelector('#global-search');
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.select();
+    }
+  };
+  document.querySelector('#btn-sidebar-search')?.addEventListener('click', triggerGlobalSearch);
+  document.querySelector('#btn-sidebar-search-icon')?.addEventListener('click', triggerGlobalSearch);
+
   document.querySelector('#btn-workspace-select')?.addEventListener('click', () => {
     showToast('Workspace aktif: Tim Kreatif YMQ (prototipe lokal).');
   });
@@ -388,6 +437,13 @@ document.addEventListener('keydown', (e) => {
       e.preventDefault();
       searchInput.focus();
       searchInput.select();
+    }
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+    e.preventDefault();
+    const toggleBtn = document.querySelector('#btn-sidebar-toggle');
+    if (toggleBtn) {
+      toggleBtn.click();
     }
   }
 });
