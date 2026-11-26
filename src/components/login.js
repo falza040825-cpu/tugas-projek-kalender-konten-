@@ -1,10 +1,12 @@
 /**
  * Halaman Autentikasi Interactive Desktop Setup — StudioFlow · Tim Kreatif YMQ
- * - Panggung ruangan gelap minimalis dengan meja kerja kayu hangat di bagian bawah.
- * - Kiri: Lampu meja arsitek berlengan dua (SVG) dengan tali sakelar (klik/tarik) & 5 tema warna cahaya.
+ * - Ruangan gelap minimalis dengan meja kerja kayu hangat di bagian bawah.
+ * - Kiri: Lampu meja arsitek (SVG) dengan tali sakelar (klik/tarik) & 5 warna cahaya dinamis.
  * - Tengah-Kanan: Laptop 3D CSS yang otomatis terbuka setelah lampu dinyalakan (jeda 250ms).
- * - Layar Laptop Split-Screen 50:50: Kolom Kiri Gelap (#18191C) Form + Quick Demo Login,
- *   Kolom Kanan Terang (#FAF8F5) Panel Pesan Editorial Dinamis (Sign In vs Aktivasi Akun).
+ * - Layar Laptop Sliding Overlay Split-Screen (50:50):
+ *   * Bawah Kiri (50%): Form Sign In + Quick Demo Login (Ketua Tim, Copywriter, Editor).
+ *   * Bawah Kanan (50%): Form Aktivasi Akun (Invite-Only oleh Ketua Tim).
+ *   * Atas (z-index: 10): Panel Overlay Geser gelap elegan (#18191C) dengan efek parallax slide.
  * Catatan: Simulasi front-end (state / localStorage), bukan autentikasi server nyata.
  */
 
@@ -64,7 +66,6 @@ function playLampSwitchSound(turningOn) {
 
     const now = ctx.currentTime;
 
-    // 1. Klik sakelar mekanis
     const bufferSize = Math.floor(ctx.sampleRate * 0.024);
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
@@ -89,7 +90,6 @@ function playLampSwitchSound(turningOn) {
     clickGain.connect(ctx.destination);
     noise.start(now);
 
-    // 2. Ketukan pegas logam pendek
     const snapOsc = ctx.createOscillator();
     const snapGain = ctx.createGain();
     snapOsc.type = 'triangle';
@@ -104,7 +104,6 @@ function playLampSwitchSound(turningOn) {
     snapOsc.start(now);
     snapOsc.stop(now + 0.036);
 
-    // 3. Dengung listrik hangat ringan saat lampu menyala
     if (turningOn) {
       const humOsc = ctx.createOscillator();
       const humHarmonic = ctx.createOscillator();
@@ -129,7 +128,7 @@ function playLampSwitchSound(turningOn) {
       humHarmonic.stop(now + 0.48);
     }
   } catch {
-    // Fallback aman bila audio tidak didukung / diblokir
+    // Fallback senyap
   }
 }
 
@@ -178,21 +177,11 @@ export function renderLogin(tabOverride = null) {
   if (tabOverride === 'signin' || tabOverride === 'activate') {
     authUiState.activeTab = tabOverride;
   }
-  const isSignIn = authUiState.activeTab !== 'activate';
+  const isActivate = authUiState.activeTab === 'activate';
   const theme = getCurrentTheme();
   const isOn = authUiState.lampOn;
   const isOpen = authUiState.laptopOpen;
   const isAwake = authUiState.screenAwake;
-
-  const editorialTitle = isSignIn
-    ? 'Selamat Bekerja!'
-    : 'Salam Kenal & Selamat Bergabung!';
-  const editorialSub = isSignIn
-    ? 'Mari buat karya terbaik hari ini bersama tim. Setiap ide dan naskahmu membawa manfaat.'
-    : 'Senang menyambutmu di ruang kerja kreatif StudioFlow. Aktifkan akunmu dan mari berkolaborasi!';
-  const editorialEyebrow = isSignIn
-    ? 'MASUK KERJA · RUANG STUDIO'
-    : 'ANGGOTA BARU · INVITE-ONLY';
 
   return `
     <div
@@ -370,7 +359,7 @@ export function renderLogin(tabOverride = null) {
           </div>
         </div>
 
-        <!-- CENTER-RIGHT: 3D Opening CSS Laptop -->
+        <!-- CENTER-RIGHT: 3D Opening CSS Laptop with Sliding Overlay Split-Screen -->
         <div class="desk-laptop-slot">
           <div class="laptop-3d-stage">
             <!-- Soft Display Ambient Glow behind Screen when Awake -->
@@ -383,226 +372,246 @@ export function renderLogin(tabOverride = null) {
                 <div class="laptop-lid-emblem">SF</div>
               </div>
 
-              <!-- Inner Bezel & Glowing Split-Screen Display -->
+              <!-- Inner Bezel & Sliding Split-Screen Display -->
               <div class="laptop-lid-front">
                 <div class="laptop-webcam-bar" aria-hidden="true">
                   <span class="laptop-webcam-dot"></span>
                 </div>
 
                 <div class="laptop-screen-viewport">
-                  <div class="laptop-screen-power" id="laptop-screen-content">
-                    <!-- 50% LEFT COLUMN: Dark Form Area (#18191C) -->
-                    <div class="laptop-col-form">
-                      <div class="sf-brand-row">
+                  <div
+                    id="laptop-sliding-container"
+                    class="laptop-screen-power laptop-sliding-container ${isActivate ? 'is-activate-mode' : ''}"
+                    data-auth-mode="${isActivate ? 'activate' : 'signin'}"
+                  >
+                    <!-- BOTTOM LAYER — LEFT 50%: Form Sign In -->
+                    <section
+                      id="panel-signin"
+                      class="sliding-form-pane sliding-pane-signin"
+                      aria-label="Form Sign In"
+                      aria-hidden="${isActivate ? 'true' : 'false'}"
+                    >
+                      <div class="slide-brand-head">
                         <div class="sf-logo-box" aria-hidden="true">SF</div>
-                        <div class="sf-brand-text">
-                          <strong>StudioFlow</strong>
-                          <small>TIM KREATIF YMQ</small>
+                        <div>
+                          <span class="slide-brand-eyebrow">STUDIOFLOW · TIM KREATIF YMQ</span>
+                          <h2 class="slide-form-title">Sign In</h2>
                         </div>
                       </div>
 
-                      <div class="auth-tabs laptop-auth-tabs" role="tablist" aria-label="Pilih mode autentikasi">
-                        <button
-                          type="button"
-                          id="tab-signin"
-                          role="tab"
-                          class="auth-tab-btn ${isSignIn ? 'active' : ''}"
-                          data-auth-tab="signin"
-                          aria-selected="${isSignIn ? 'true' : 'false'}"
-                          aria-controls="panel-signin"
-                        >
-                          Sign In
-                        </button>
-                        <button
-                          type="button"
-                          id="tab-activate"
-                          role="tab"
-                          class="auth-tab-btn ${!isSignIn ? 'active' : ''}"
-                          data-auth-tab="activate"
-                          aria-selected="${!isSignIn ? 'true' : 'false'}"
-                          aria-controls="panel-activate"
-                        >
-                          Aktivasi Akun
-                        </button>
+                      <div
+                        id="login-success"
+                        class="slide-alert-success"
+                        role="status"
+                        style="display:${authUiState.successBanner ? 'block' : 'none'};"
+                      >
+                        ${authUiState.successBanner ? `✓ ${escapeHtml(authUiState.successBanner)}` : ''}
                       </div>
 
-                      ${isSignIn ? `
-                        <div id="panel-signin" class="laptop-panel-fade" role="tabpanel" aria-labelledby="tab-signin">
-                          ${authUiState.successBanner ? `
-                            <div id="login-success" class="login-success-alert lamp-alert-success" role="status">
-                              ✓ ${escapeHtml(authUiState.successBanner)}
-                            </div>
-                          ` : ''}
+                      <div id="login-error" class="slide-alert-error" role="alert" style="display:none;"></div>
 
-                          <div id="login-error" class="login-error-alert lamp-alert-error" role="alert" style="display:none;"></div>
+                      <form id="login-form" novalidate class="slide-form">
+                        <div class="slide-field">
+                          <label class="slide-label" for="login-email">Email</label>
+                          <input
+                            id="login-email"
+                            name="email"
+                            type="email"
+                            class="slide-input"
+                            value="${escapeHtml(authUiState.prefillEmail)}"
+                            placeholder="ketua@tim.com"
+                            autocomplete="email"
+                            required
+                          />
+                        </div>
 
-                          <form id="login-form" novalidate class="login-form laptop-form">
-                            <div class="lamp-field">
-                              <label class="form-label lamp-label" for="login-email">Email</label>
-                              <input
-                                id="login-email"
-                                name="email"
-                                type="email"
-                                class="form-control lamp-input"
-                                value="${escapeHtml(authUiState.prefillEmail)}"
-                                placeholder="ketua@tim.com"
-                                autocomplete="email"
-                                required
-                              />
-                            </div>
-
-                            <div class="lamp-field">
-                              <label class="form-label lamp-label" for="login-password">Kata Sandi</label>
-                              <div class="login-password-wrap">
-                                <input
-                                  id="login-password"
-                                  name="password"
-                                  type="password"
-                                  class="form-control lamp-input"
-                                  placeholder="Masukkan kata sandi"
-                                  autocomplete="current-password"
-                                  required
-                                />
-                                <button
-                                  type="button"
-                                  id="toggle-password-vis"
-                                  class="login-vis-btn lamp-vis-btn"
-                                  aria-label="Tampilkan atau sembunyikan kata sandi"
-                                  aria-pressed="false"
-                                >
-                                  Lihat
-                                </button>
-                              </div>
-                            </div>
-
-                            <button type="submit" class="lamp-submit-btn login-submit-btn" id="btn-login-submit">
-                              Sign In ke StudioFlow →
+                        <div class="slide-field">
+                          <label class="slide-label" for="login-password">Kata Sandi</label>
+                          <div class="login-password-wrap">
+                            <input
+                              id="login-password"
+                              name="password"
+                              type="password"
+                              class="slide-input"
+                              placeholder="Masukkan kata sandi"
+                              autocomplete="current-password"
+                              required
+                            />
+                            <button
+                              type="button"
+                              id="toggle-password-vis"
+                              class="slide-vis-btn"
+                              aria-label="Tampilkan atau sembunyikan kata sandi"
+                              aria-pressed="false"
+                            >
+                              Lihat
                             </button>
-                          </form>
-
-                          <!-- Quick Demo Login -->
-                          <div class="laptop-demo-box">
-                            <div class="laptop-demo-head">
-                              <strong>Quick Demo Login</strong>
-                              <button type="button" id="btn-login-reset-demo" class="lamp-reset-link">
-                                Reset dummy
-                              </button>
-                            </div>
-                            <div class="laptop-demo-grid">
-                              ${demoCredentialsGuide.map(acc => `
-                                <button
-                                  type="button"
-                                  class="laptop-demo-chip login-autofill-btn"
-                                  data-demo-email="${escapeHtml(acc.email)}"
-                                  data-demo-password="${escapeHtml(acc.password)}"
-                                  title="${escapeHtml(acc.email)} · ${escapeHtml(acc.password)}"
-                                >
-                                  <span>${escapeHtml(acc.role)}</span>
-                                </button>
-                              `).join('')}
-                            </div>
                           </div>
                         </div>
-                      ` : `
-                        <div id="panel-activate" class="laptop-panel-fade" role="tabpanel" aria-labelledby="tab-activate">
-                          <div id="activate-error" class="login-error-alert lamp-alert-error" role="alert" style="display:none;"></div>
 
-                          <form id="activate-form" novalidate class="login-form laptop-form">
-                            <div class="lamp-field">
-                              <label class="form-label lamp-label" for="act-email">Email Terdaftar</label>
-                              <input
-                                id="act-email"
-                                name="email"
-                                type="email"
-                                class="form-control lamp-input"
-                                placeholder="Email didaftarkan Ketua Tim"
-                                autocomplete="email"
-                                required
-                              />
-                            </div>
+                        <button type="submit" class="slide-submit-btn" id="btn-login-submit">
+                          Masuk ke Ruang Kerja →
+                        </button>
+                      </form>
 
-                            <div class="lamp-field">
-                              <label class="form-label lamp-label" for="act-name">Nama Lengkap</label>
-                              <input
-                                id="act-name"
-                                name="name"
-                                type="text"
-                                class="form-control lamp-input"
-                                placeholder="Contoh: Ahmad Fauzi"
-                                autocomplete="name"
-                                required
-                              />
-                            </div>
-
-                            <div class="lamp-field">
-                              <label class="form-label lamp-label" for="act-password">Buat Kata Sandi Baru</label>
-                              <div class="login-password-wrap">
-                                <input
-                                  id="act-password"
-                                  name="new-password"
-                                  type="password"
-                                  class="form-control lamp-input"
-                                  placeholder="Minimal 6 karakter"
-                                  autocomplete="new-password"
-                                  required
-                                />
-                                <button
-                                  type="button"
-                                  id="toggle-act-password-vis"
-                                  class="login-vis-btn lamp-vis-btn"
-                                  aria-label="Tampilkan atau sembunyikan kata sandi baru"
-                                  aria-pressed="false"
-                                >
-                                  Lihat
-                                </button>
-                              </div>
-                            </div>
-
-                            <button type="submit" class="lamp-submit-btn login-submit-btn" id="btn-activate-submit">
-                              Aktivasi Akun →
-                            </button>
-                          </form>
-
-                          <p class="laptop-switch-hint">
-                            Sudah punya akun aktif?
-                            <button type="button" class="lamp-inline-link" data-auth-tab="signin">Kembali ke Sign In</button>
-                          </p>
+                      <!-- Quick Demo Login -->
+                      <div class="slide-demo-box">
+                        <div class="slide-demo-head">
+                          <strong>Quick Demo Login</strong>
+                          <button type="button" id="btn-login-reset-demo" class="slide-reset-link">
+                            Reset dummy
+                          </button>
                         </div>
-                      `}
-                    </div>
+                        <div class="slide-demo-grid">
+                          ${demoCredentialsGuide.map(acc => `
+                            <button
+                              type="button"
+                              class="slide-demo-chip login-autofill-btn"
+                              data-demo-email="${escapeHtml(acc.email)}"
+                              data-demo-password="${escapeHtml(acc.password)}"
+                              title="${escapeHtml(acc.email)} · ${escapeHtml(acc.password)}"
+                            >
+                              ${escapeHtml(acc.role)}
+                            </button>
+                          `).join('')}
+                        </div>
+                      </div>
 
-                    <!-- 50% RIGHT COLUMN: Warm Editorial Light Panel (#FAF8F5) -->
-                    <div class="laptop-col-editorial" data-editorial-mode="${isSignIn ? 'signin' : 'activate'}">
-                      <div class="editorial-accent-bar" aria-hidden="true"></div>
-                      <div class="editorial-content editorial-fade-slide">
-                        <span class="editorial-eyebrow">${editorialEyebrow}</span>
-                        <h1 class="editorial-heading">${editorialTitle}</h1>
-                        <p class="editorial-subtext">${editorialSub}</p>
+                      <button type="button" class="slide-mobile-switch" data-auth-tab="activate">
+                        Belum aktif? <span>Aktivasi Akun Baru →</span>
+                      </button>
+                    </section>
 
-                        <div class="editorial-divider" aria-hidden="true"></div>
+                    <!-- BOTTOM LAYER — RIGHT 50%: Form Aktivasi Akun (Invite-Only) -->
+                    <section
+                      id="panel-activate"
+                      class="sliding-form-pane sliding-pane-activate"
+                      aria-label="Form Aktivasi Akun"
+                      aria-hidden="${isActivate ? 'false' : 'true'}"
+                    >
+                      <div class="slide-brand-head">
+                        <div class="sf-logo-box" aria-hidden="true">SF</div>
+                        <div>
+                          <span class="slide-brand-eyebrow">INVITE-ONLY · ANGGOTA BARU</span>
+                          <h2 class="slide-form-title">Aktivasi Akun</h2>
+                        </div>
+                      </div>
 
-                        ${isSignIn ? `
-                          <div class="editorial-footer-meta">
-                            <span class="editorial-meta-label">Alur Terpadu Tim Kreatif</span>
-                            <div class="editorial-role-tags">
-                              <span>Ketua Tim</span>
-                              <span>→</span>
-                              <span>Copywriter</span>
-                              <span>→</span>
-                              <span>Editor</span>
-                            </div>
+                      <div id="activate-error" class="slide-alert-error" role="alert" style="display:none;"></div>
+
+                      <form id="activate-form" novalidate class="slide-form">
+                        <div class="slide-field">
+                          <label class="slide-label" for="act-name">Nama Lengkap</label>
+                          <input
+                            id="act-name"
+                            name="name"
+                            type="text"
+                            class="slide-input"
+                            placeholder="Contoh: Ahmad Fauzi"
+                            autocomplete="name"
+                            required
+                          />
+                        </div>
+
+                        <div class="slide-field">
+                          <label class="slide-label" for="act-email">Email Terdaftar</label>
+                          <input
+                            id="act-email"
+                            name="email"
+                            type="email"
+                            class="slide-input"
+                            placeholder="Email didaftarkan Ketua Tim"
+                            autocomplete="email"
+                            required
+                          />
+                        </div>
+
+                        <div class="slide-field">
+                          <label class="slide-label" for="act-password">Buat Kata Sandi Baru</label>
+                          <div class="login-password-wrap">
+                            <input
+                              id="act-password"
+                              name="new-password"
+                              type="password"
+                              class="slide-input"
+                              placeholder="Minimal 6 karakter"
+                              autocomplete="new-password"
+                              required
+                            />
+                            <button
+                              type="button"
+                              id="toggle-act-password-vis"
+                              class="slide-vis-btn"
+                              aria-label="Tampilkan atau sembunyikan kata sandi baru"
+                              aria-pressed="false"
+                            >
+                              Lihat
+                            </button>
                           </div>
-                        ` : `
-                          <div class="editorial-footer-meta">
-                            <span class="editorial-meta-label">Akses Invite-Only</span>
-                            <p class="editorial-meta-note">
-                              Role tugas (<strong>Copywriter</strong> / <strong>Editor</strong>) otomatis terhubung dari undangan Ketua Tim.
+                        </div>
+
+                        <button type="submit" class="slide-submit-btn" id="btn-activate-submit">
+                          Aktivasi Akun →
+                        </button>
+                      </form>
+
+                      <p class="slide-invite-note">
+                        Role (<strong>Copywriter</strong> / <strong>Editor</strong>) otomatis mengikuti undangan Ketua Tim.
+                      </p>
+
+                      <button type="button" class="slide-mobile-switch" data-auth-tab="signin">
+                        Sudah punya akun aktif? <span>Sign In →</span>
+                      </button>
+                    </section>
+
+                    <!-- TOP LAYER (z-index: 10): Sliding Overlay Panel (#18191C) with Parallax Track -->
+                    <div class="sliding-overlay-wrap" aria-live="polite">
+                      <div class="sliding-overlay-track">
+                        <!-- Panel A (Left half of track — Visible when Overlay slides to LEFT in Aktivasi mode) -->
+                        <div class="sliding-overlay-panel overlay-panel-left">
+                          <div class="overlay-accent-line" aria-hidden="true"></div>
+                          <div class="overlay-inner-copy">
+                            <span class="overlay-eyebrow">ANGGOTA BARU · STUDIOFLOW</span>
+                            <h1 class="overlay-heading">Salam Kenal &amp; Selamat Bergabung!</h1>
+                            <p class="overlay-subtext">
+                              Senang menyambutmu di ruang kerja kreatif StudioFlow. Aktifkan akunmu dan mari berkolaborasi!
                             </p>
+                            <button
+                              type="button"
+                              id="tab-signin"
+                              class="overlay-outline-btn"
+                              data-auth-tab="signin"
+                            >
+                              Sudah Punya Akun? Sign In
+                            </button>
                           </div>
-                        `}
-                      </div>
-                      <div class="editorial-footnote">
-                        Simulasi lokal <code>state/localStorage</code> · Yayasan Motivator Qur'an
+                          <div class="overlay-footnote">
+                            Simulasi lokal <code>state/localStorage</code> · Tim Kreatif YMQ
+                          </div>
+                        </div>
+
+                        <!-- Panel B (Right half of track — Visible by Default on RIGHT in Sign In mode) -->
+                        <div class="sliding-overlay-panel overlay-panel-right">
+                          <div class="overlay-accent-line" aria-hidden="true"></div>
+                          <div class="overlay-inner-copy">
+                            <span class="overlay-eyebrow">RUANG KERJA · TIM KREATIF YMQ</span>
+                            <h1 class="overlay-heading">Selamat Bekerja!</h1>
+                            <p class="overlay-subtext">
+                              Mari buat karya terbaik hari ini bersama tim. Setiap ide dan naskahmu membawa manfaat.
+                            </p>
+                            <button
+                              type="button"
+                              id="tab-activate"
+                              class="overlay-outline-btn"
+                              data-auth-tab="activate"
+                            >
+                              Aktivasi Akun Baru
+                            </button>
+                          </div>
+                          <div class="overlay-footnote">
+                            Simulasi lokal <code>state/localStorage</code> · Tim Kreatif YMQ
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -645,6 +654,9 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
   const hintBtn = document.querySelector('#lamp-pull-hint-btn');
   const colorPillBtn = document.querySelector('#lamp-color-pill-btn');
   const lidEl = document.querySelector('.laptop-lid-pivot');
+  const slidingContainer = document.querySelector('#laptop-sliding-container');
+  const signInPane = document.querySelector('#panel-signin');
+  const activatePane = document.querySelector('#panel-activate');
 
   const applyThemeToStage = () => {
     const theme = getCurrentTheme();
@@ -669,6 +681,36 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     if (screenAwakeTimer) clearTimeout(screenAwakeTimer);
     laptopOpenTimer = null;
     screenAwakeTimer = null;
+  };
+
+  const setSlidingMode = (nextMode, focusSelector = null) => {
+    const toActivate = nextMode === 'activate';
+    authUiState.activeTab = toActivate ? 'activate' : 'signin';
+
+    if (slidingContainer) {
+      slidingContainer.classList.toggle('is-activate-mode', toActivate);
+      slidingContainer.setAttribute('data-auth-mode', authUiState.activeTab);
+    }
+    if (signInPane) signInPane.setAttribute('aria-hidden', String(toActivate));
+    if (activatePane) activatePane.setAttribute('aria-hidden', String(!toActivate));
+
+    // Bersihkan error saat berpindah panel
+    const loginErr = document.querySelector('#login-error');
+    const actErr = document.querySelector('#activate-error');
+    if (loginErr) loginErr.style.display = 'none';
+    if (actErr) actErr.style.display = 'none';
+
+    if (toActivate) {
+      authUiState.successBanner = '';
+      const succEl = document.querySelector('#login-success');
+      if (succEl) succEl.style.display = 'none';
+    }
+
+    if (focusSelector && authUiState.screenAwake) {
+      setTimeout(() => {
+        document.querySelector(focusSelector)?.focus();
+      }, 420);
+    }
   };
 
   const triggerPullAnimationAndToggle = (fromDrag = false) => {
@@ -706,7 +748,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     }
 
     if (isNowOn) {
-      // Langkah 2: Setelah jeda 250ms sejak lampu menyala, buka tutup layar laptop secara 3D
+      // Jeda 250ms setelah lampu menyala -> buka tutup laptop 3D
       laptopOpenTimer = setTimeout(() => {
         if (!authUiState.lampOn) return;
         authUiState.laptopOpen = true;
@@ -714,7 +756,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
         stageEl?.setAttribute('data-laptop-open', 'true');
       }, 250);
 
-      // Langkah 3: Nyalakan cahaya & isi layar laptop saat tutup mulai terbuka penuh
+      // Nyalakan layar laptop saat tutup terbuka
       screenAwakeTimer = setTimeout(() => {
         if (!authUiState.lampOn) return;
         authUiState.screenAwake = true;
@@ -723,14 +765,13 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
 
         const focusTarget =
           authUiState.activeTab === 'activate'
-            ? document.querySelector('#act-email')
+            ? document.querySelector('#act-name')
             : authUiState.prefillEmail
               ? document.querySelector('#login-password')
               : document.querySelector('#login-email');
         focusTarget?.focus();
       }, 620);
     } else {
-      // Saat lampu dimatikan: layar meredup lalu tutup laptop menutup kembali
       authUiState.screenAwake = false;
       authUiState.laptopOpen = false;
       stageEl?.classList.remove('is-screen-awake');
@@ -750,7 +791,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     playColorTickSound();
   };
 
-  // Interactive Pull Cord: supports BOTH direct click AND downward pointer drag
+  // Interactive Pull Cord: click & pointer drag downward
   if (cordEl) {
     let dragging = false;
     let startY = 0;
@@ -806,10 +847,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     });
   }
 
-  hintBtn?.addEventListener('click', () => {
-    triggerPullAnimationAndToggle(false);
-  });
-
+  hintBtn?.addEventListener('click', () => triggerPullAnimationAndToggle(false));
   shadeEl?.addEventListener('click', cycleLampTheme);
   shadeEl?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -819,148 +857,130 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
   });
   colorPillBtn?.addEventListener('click', cycleLampTheme);
 
-  const switchTab = (nextTab, focusSelector = null) => {
-    authUiState.activeTab = nextTab;
-    authUiState.lampOn = true;
-    authUiState.laptopOpen = true;
-    authUiState.screenAwake = true;
-    if (nextTab === 'activate') {
-      authUiState.successBanner = '';
-    }
-    if (typeof rerenderLogin === 'function') {
-      rerenderLogin(focusSelector);
-    }
-  };
-
+  // Smooth Sliding Overlay Toggle Buttons (NO DOM rebuild — pure smooth 0.65s slide!)
   document.querySelectorAll('[data-auth-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetTab = btn.dataset.authTab;
       if (!targetTab) return;
-      switchTab(targetTab, targetTab === 'activate' ? '#act-email' : '#login-email');
+      setSlidingMode(targetTab, targetTab === 'activate' ? '#act-name' : '#login-email');
     });
   });
 
-  if (authUiState.activeTab !== 'activate') {
-    const form = document.querySelector('#login-form');
-    const emailEl = document.querySelector('#login-email');
-    const passEl = document.querySelector('#login-password');
-    const errEl = document.querySelector('#login-error');
-    const toggleBtn = document.querySelector('#toggle-password-vis');
+  // ── Form 1: Sign In Events ──
+  const loginForm = document.querySelector('#login-form');
+  const emailEl = document.querySelector('#login-email');
+  const passEl = document.querySelector('#login-password');
+  const errEl = document.querySelector('#login-error');
+  const succEl = document.querySelector('#login-success');
+  const toggleBtn = document.querySelector('#toggle-password-vis');
 
-    if (authUiState.screenAwake) {
-      if (authUiState.prefillEmail && passEl) {
-        passEl.focus();
-      } else {
-        emailEl?.focus();
-      }
-    }
+  toggleBtn?.addEventListener('click', () => {
+    if (!passEl) return;
+    const isHidden = passEl.type === 'password';
+    passEl.type = isHidden ? 'text' : 'password';
+    toggleBtn.textContent = isHidden ? 'Tutup' : 'Lihat';
+    toggleBtn.setAttribute('aria-pressed', String(isHidden));
+  });
 
-    toggleBtn?.addEventListener('click', () => {
-      if (!passEl) return;
-      const isHidden = passEl.type === 'password';
-      passEl.type = isHidden ? 'text' : 'password';
-      toggleBtn.textContent = isHidden ? 'Tutup' : 'Lihat';
-      toggleBtn.setAttribute('aria-pressed', String(isHidden));
-    });
-
-    document.querySelectorAll('.login-autofill-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (emailEl) emailEl.value = btn.dataset.demoEmail || '';
-        if (passEl) passEl.value = btn.dataset.demoPassword || '';
-        if (errEl) errEl.style.display = 'none';
-        document.querySelector('#btn-login-submit')?.focus();
-      });
-    });
-
-    document.querySelector('#btn-login-reset-demo')?.addEventListener('click', () => {
-      resetDemoWorkspace(false);
-      const keepTheme = authUiState.themeIndex;
-      resetAuthUiState();
-      authUiState.lampOn = true;
-      authUiState.laptopOpen = true;
-      authUiState.screenAwake = true;
-      authUiState.themeIndex = keepTheme;
-      if (typeof rerenderLogin === 'function') {
-        rerenderLogin('#login-email');
-      }
-      showToast('Data tim, akun bawaan, & sesi lokal berhasil direset.');
-    });
-
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const res = loginWithCredentials(emailEl?.value || '', passEl?.value || '');
-      if (!res.ok) {
-        if (errEl) {
-          errEl.textContent = res.error;
-          errEl.style.display = 'block';
-        }
-        if (!emailEl?.value.trim()) {
-          emailEl?.focus();
-        } else {
-          passEl?.focus();
-        }
-        return;
-      }
-
+  document.querySelectorAll('.login-autofill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (emailEl) emailEl.value = btn.dataset.demoEmail || '';
+      if (passEl) passEl.value = btn.dataset.demoPassword || '';
       if (errEl) errEl.style.display = 'none';
-      resetAuthUiState();
-      onLoginSuccess(res.user);
+      document.querySelector('#btn-login-submit')?.focus();
     });
-  } else {
-    const actForm = document.querySelector('#activate-form');
-    const actEmailEl = document.querySelector('#act-email');
-    const actNameEl = document.querySelector('#act-name');
-    const actPassEl = document.querySelector('#act-password');
-    const actErrEl = document.querySelector('#activate-error');
-    const actToggleBtn = document.querySelector('#toggle-act-password-vis');
+  });
 
-    if (authUiState.screenAwake) {
-      actEmailEl?.focus();
+  document.querySelector('#btn-login-reset-demo')?.addEventListener('click', () => {
+    resetDemoWorkspace(false);
+    const keepTheme = authUiState.themeIndex;
+    resetAuthUiState();
+    authUiState.lampOn = true;
+    authUiState.laptopOpen = true;
+    authUiState.screenAwake = true;
+    authUiState.themeIndex = keepTheme;
+    if (typeof rerenderLogin === 'function') {
+      rerenderLogin('#login-email');
+    }
+    showToast('Data tim, akun bawaan, & sesi lokal berhasil direset.');
+  });
+
+  loginForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const res = loginWithCredentials(emailEl?.value || '', passEl?.value || '');
+    if (!res.ok) {
+      if (errEl) {
+        errEl.textContent = res.error;
+        errEl.style.display = 'block';
+      }
+      if (!emailEl?.value.trim()) {
+        emailEl?.focus();
+      } else {
+        passEl?.focus();
+      }
+      return;
     }
 
-    actToggleBtn?.addEventListener('click', () => {
-      if (!actPassEl) return;
-      const isHidden = actPassEl.type === 'password';
-      actPassEl.type = isHidden ? 'text' : 'password';
-      actToggleBtn.textContent = isHidden ? 'Tutup' : 'Lihat';
-      actToggleBtn.setAttribute('aria-pressed', String(isHidden));
+    if (errEl) errEl.style.display = 'none';
+    resetAuthUiState();
+    onLoginSuccess(res.user);
+  });
+
+  // ── Form 2: Aktivasi Akun (Invite-Only) Events ──
+  const actForm = document.querySelector('#activate-form');
+  const actEmailEl = document.querySelector('#act-email');
+  const actNameEl = document.querySelector('#act-name');
+  const actPassEl = document.querySelector('#act-password');
+  const actErrEl = document.querySelector('#activate-error');
+  const actToggleBtn = document.querySelector('#toggle-act-password-vis');
+
+  actToggleBtn?.addEventListener('click', () => {
+    if (!actPassEl) return;
+    const isHidden = actPassEl.type === 'password';
+    actPassEl.type = isHidden ? 'text' : 'password';
+    actToggleBtn.textContent = isHidden ? 'Tutup' : 'Lihat';
+    actToggleBtn.setAttribute('aria-pressed', String(isHidden));
+  });
+
+  actForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const res = activateInvitedAccount({
+      email: actEmailEl?.value || '',
+      fullName: actNameEl?.value || '',
+      password: actPassEl?.value || '',
     });
 
-    actForm?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const res = activateInvitedAccount({
-        email: actEmailEl?.value || '',
-        fullName: actNameEl?.value || '',
-        password: actPassEl?.value || '',
-      });
-
-      if (!res.ok) {
-        if (actErrEl) {
-          actErrEl.textContent = res.error;
-          actErrEl.style.display = 'block';
-        }
-        if (!actEmailEl?.value.trim() || res.error.includes('Email')) {
-          actEmailEl?.focus();
-        } else if (!actNameEl?.value.trim() || res.error.includes('Nama')) {
-          actNameEl?.focus();
-        } else {
-          actPassEl?.focus();
-        }
-        return;
+    if (!res.ok) {
+      if (actErrEl) {
+        actErrEl.textContent = res.error;
+        actErrEl.style.display = 'block';
       }
-
-      if (actErrEl) actErrEl.style.display = 'none';
-      authUiState.activeTab = 'signin';
-      authUiState.lampOn = true;
-      authUiState.laptopOpen = true;
-      authUiState.screenAwake = true;
-      authUiState.prefillEmail = res.user.email;
-      authUiState.successBanner = `Aktivasi berhasil! Akun "${res.user.name}" aktif sebagai ${res.user.role}. Silakan Sign In.`;
-      showToast(`Aktivasi sukses! ${res.user.name} aktif sebagai ${res.user.role}. Silakan masuk.`);
-
-      if (typeof rerenderLogin === 'function') {
-        rerenderLogin('#login-password');
+      if (!actEmailEl?.value.trim() || res.error.includes('Email')) {
+        actEmailEl?.focus();
+      } else if (!actNameEl?.value.trim() || res.error.includes('Nama')) {
+        actNameEl?.focus();
+      } else {
+        actPassEl?.focus();
       }
-    });
-  }
+      return;
+    }
+
+    if (actErrEl) actErrEl.style.display = 'none';
+    authUiState.prefillEmail = res.user.email;
+    authUiState.successBanner = `Aktivasi berhasil! Akun "${res.user.name}" aktif sebagai ${res.user.role}. Silakan Sign In.`;
+
+    if (emailEl) emailEl.value = res.user.email;
+    if (passEl) passEl.value = '';
+    if (actForm) actForm.reset();
+
+    if (succEl) {
+      succEl.textContent = `✓ ${authUiState.successBanner}`;
+      succEl.style.display = 'block';
+    }
+
+    showToast(`Aktivasi sukses! ${res.user.name} aktif sebagai ${res.user.role}. Silakan masuk.`);
+
+    // Geser mulus overlay kembali ke kanan agar Form Sign In muncul di kiri
+    setSlidingMode('signin', '#login-password');
+  });
 }
