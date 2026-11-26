@@ -2796,113 +2796,155 @@ button.role-badge-pill:hover {
   line-height: 1.45;
 }
 
-/* ── Interactive Desk Lamp Login (Dark Studio Split Stage) ── */
-.login-lamp-stage {
+/* ── Interactive Desktop Setup Login: Lampu Meja & Laptop 3D Terbuka ── */
+.desk-login-stage {
   position: relative;
   min-height: 100vh;
+  height: 100vh;
   width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
-  justify-content: center;
-  padding: 28px 24px;
-  background: radial-gradient(circle at 50% 0%, #1C1E24 0%, #121316 62%, #0C0D10 100%);
-  color: #F3F4F6;
+  background: radial-gradient(circle at 38% 35%, #1d1e22 0%, #0d0e10 100%);
+  color: #F8FAFC;
   isolation: isolate;
 }
 
-/* Ambient room wash when lamp is ON */
-.lamp-room-ambient {
-  position: fixed;
+/* Ambient Room Wash when Desk Lamp is ON */
+.desk-room-glow {
+  position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   opacity: 0;
   background:
-    radial-gradient(circle at 38% 36%, rgba(var(--lamp-rgb), 0.16) 0%, rgba(var(--lamp-rgb), 0.05) 36%, transparent 68%),
-    radial-gradient(circle at 72% 52%, rgba(var(--lamp-rgb), 0.12) 0%, transparent 56%);
+    radial-gradient(circle at 30% 34%, rgba(var(--lamp-rgb), 0.16) 0%, rgba(var(--lamp-rgb), 0.05) 38%, transparent 70%),
+    radial-gradient(circle at 64% 48%, rgba(var(--lamp-rgb), 0.11) 0%, transparent 56%);
   transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), background 0.45s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-room-ambient {
+.desk-login-stage.is-lit .desk-room-glow {
   opacity: 1;
 }
 
-/* Studio desk / floor horizon gradient */
-.lamp-floor-plane {
-  position: fixed;
+/* Warm Wooden Desk Surface at Bottom (~130px) */
+.wooden-desk-surface {
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 26vh;
+  height: 130px;
+  z-index: 1;
+  background: linear-gradient(180deg, #5c3a21 0%, #3a2313 45%, #241409 100%);
+  border-top: 2px solid rgba(255, 214, 170, 0.22);
+  box-shadow:
+    inset 0 12px 26px rgba(0, 0, 0, 0.28),
+    0 -14px 40px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.wooden-desk-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 44px,
+    rgba(255, 215, 175, 0.12) 45px,
+    transparent 48px
+  );
   pointer-events: none;
-  z-index: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.025) 18%, rgba(8, 9, 12, 0.92) 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.045);
 }
 
-.login-lamp-stage.is-lit .lamp-floor-plane {
-  background:
-    radial-gradient(ellipse 64% 85% at 54% 0%, rgba(var(--lamp-rgb), 0.14) 0%, transparent 72%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(8, 9, 12, 0.92) 100%);
-  border-top-color: rgba(var(--lamp-rgb), 0.18);
+.wooden-desk-light-pool {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse 58% 95% at 52% 0%,
+    rgba(var(--lamp-rgb), 0.34) 0%,
+    rgba(var(--lamp-rgb), 0.12) 48%,
+    transparent 82%
+  );
+  transition: opacity 0.55s ease, background 0.4s ease;
+  pointer-events: none;
 }
 
-.lamp-split-container {
+.desk-login-stage.is-lit .wooden-desk-light-pool {
+  opacity: 1;
+}
+
+.wooden-desk-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 68px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.25), rgba(255, 214, 170, 0.16), rgba(0, 0, 0, 0.3));
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* Main Desk Scene Sitting Directly on Top of Wooden Desk */
+.desk-scene {
   position: relative;
-  z-index: 2;
-  width: min(1020px, 100%);
+  z-index: 3;
+  width: min(1140px, 100%);
+  padding: 20px 28px 66px;
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(360px, 420px);
-  align-items: center;
-  gap: 36px;
+  grid-template-columns: 310px minmax(0, 1fr);
+  align-items: end;
+  gap: 18px;
 }
 
-/* Left Column: Architect Desk Lamp */
-.lamp-visual-col {
+/* ── LEFT: Architect Desk Lamp ── */
+.desk-lamp-slot {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   position: relative;
 }
 
 .lamp-assembly {
   position: relative;
-  width: 360px;
-  height: 430px;
+  width: 310px;
+  height: 400px;
   user-select: none;
   -webkit-user-select: none;
 }
 
 .desk-lamp-svg {
   position: relative;
-  z-index: 3;
+  z-index: 4;
   width: 100%;
   height: 100%;
   overflow: visible;
-  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55));
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.6));
 }
 
-/* Diagonal Volumetric Spotlight Cone */
+/* Diagonal Spotlight Cone illuminating Laptop & Wooden Desk */
 .lamp-spotlight-cone {
   position: absolute;
-  top: 72px;
-  left: 232px;
-  width: 780px;
-  height: 540px;
+  top: 52px;
+  left: 204px;
+  width: 820px;
+  height: 470px;
   pointer-events: none;
   z-index: 1;
-  clip-path: polygon(8% 11%, 100% 0%, 100% 100%, 1% 27%);
+  clip-path: polygon(6% 15%, 100% 0%, 100% 100%, 0% 34%);
   background: radial-gradient(
-    ellipse 95% 80% at 6% 20%,
-    rgba(var(--lamp-rgb), 0.34) 0%,
-    rgba(var(--lamp-rgb), 0.17) 34%,
-    rgba(var(--lamp-rgb), 0.05) 66%,
-    transparent 92%
+    ellipse 96% 85% at 5% 24%,
+    rgba(var(--lamp-rgb), 0.36) 0%,
+    rgba(var(--lamp-rgb), 0.18) 36%,
+    rgba(var(--lamp-rgb), 0.05) 70%,
+    transparent 94%
   );
   filter: blur(18px);
   opacity: 0;
-  transform-origin: 6% 20%;
+  transform-origin: 5% 24%;
   transform: scale(0.84);
   transition:
     opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
@@ -2912,17 +2954,17 @@ button.role-badge-pill:hover {
 
 .lamp-spotlight-core {
   position: absolute;
-  top: 118px;
-  left: 238px;
+  top: 100px;
+  left: 212px;
   width: 340px;
-  height: 290px;
+  height: 270px;
   pointer-events: none;
   z-index: 2;
-  clip-path: polygon(16% 6%, 100% 16%, 94% 100%, 2% 33%);
+  clip-path: polygon(15% 6%, 100% 14%, 92% 100%, 1% 34%);
   background: radial-gradient(
-    ellipse 85% 75% at 10% 22%,
+    ellipse 86% 76% at 10% 22%,
     rgba(255, 255, 255, 0.35) 0%,
-    rgba(var(--lamp-rgb), 0.42) 26%,
+    rgba(var(--lamp-rgb), 0.44) 26%,
     rgba(var(--lamp-rgb), 0.08) 68%,
     transparent 100%
   );
@@ -2931,23 +2973,13 @@ button.role-badge-pill:hover {
   transition: opacity 0.4s ease, background 0.4s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-spotlight-cone {
+.desk-login-stage.is-lit .lamp-spotlight-cone {
   opacity: 1;
   transform: scale(1);
 }
 
-.login-lamp-stage.is-lit .lamp-spotlight-core {
+.desk-login-stage.is-lit .lamp-spotlight-core {
   opacity: 1;
-}
-
-/* SVG Bulb, Shade & Desk Pool Illumination */
-.lamp-desk-pool {
-  fill: rgba(var(--lamp-rgb), 0);
-  transition: fill 0.5s ease;
-}
-
-.login-lamp-stage.is-lit .lamp-desk-pool {
-  fill: rgba(var(--lamp-rgb), 0.16);
 }
 
 .lamp-shade-group {
@@ -2956,7 +2988,7 @@ button.role-badge-pill:hover {
   transition: filter 0.25s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-shade-group:hover {
+.desk-login-stage.is-lit .lamp-shade-group:hover {
   filter: brightness(1.08);
 }
 
@@ -2965,8 +2997,8 @@ button.role-badge-pill:hover {
   transition: fill 0.35s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-shade-mouth {
-  fill: rgba(var(--lamp-rgb), 0.28);
+.desk-login-stage.is-lit .lamp-shade-mouth {
+  fill: rgba(var(--lamp-rgb), 0.3);
 }
 
 .lamp-shade-rim {
@@ -2974,8 +3006,8 @@ button.role-badge-pill:hover {
   transition: stroke 0.35s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-shade-rim {
-  stroke: rgba(var(--lamp-rgb), 0.78);
+.desk-login-stage.is-lit .lamp-shade-rim {
+  stroke: rgba(var(--lamp-rgb), 0.8);
 }
 
 .lamp-bulb-glass {
@@ -2985,7 +3017,7 @@ button.role-badge-pill:hover {
   transition: fill 0.3s ease, stroke 0.3s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-bulb-glass {
+.desk-login-stage.is-lit .lamp-bulb-glass {
   fill: var(--lamp-color);
   stroke: #FFFFFF;
 }
@@ -2995,7 +3027,7 @@ button.role-badge-pill:hover {
   transition: fill 0.3s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-bulb-core {
+.desk-login-stage.is-lit .lamp-bulb-core {
   fill: #FFFFFF;
 }
 
@@ -3004,7 +3036,7 @@ button.role-badge-pill:hover {
   transition: opacity 0.4s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-bulb-halo {
+.desk-login-stage.is-lit .lamp-bulb-halo {
   opacity: 0.95;
 }
 
@@ -3031,7 +3063,7 @@ button.role-badge-pill:hover {
   transition: fill 0.3s ease, stroke 0.3s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-cord-bead {
+.desk-login-stage.is-lit .lamp-cord-bead {
   fill: var(--lamp-color);
   stroke: #FFFFFF;
 }
@@ -3043,56 +3075,55 @@ button.role-badge-pill:hover {
 }
 
 .lamp-cord-group:hover .lamp-cord-bead-halo {
-  fill: rgba(var(--lamp-rgb), 0.32);
+  fill: rgba(var(--lamp-rgb), 0.34);
   opacity: 1;
 }
 
-.login-lamp-stage.is-dark .lamp-cord-bead-halo {
+.desk-login-stage.is-dark .lamp-cord-bead-halo {
   animation: lampBeadPulse 2.1s ease-in-out infinite;
 }
 
 @keyframes lampBeadPulse {
   0%, 100% {
     opacity: 0.35;
-    transform-origin: 230px 296px;
+    transform-origin: 222px 298px;
     transform: scale(0.95);
   }
   50% {
     opacity: 0.95;
-    transform-origin: 230px 296px;
-    transform: scale(1.22);
+    transform-origin: 222px 298px;
+    transform: scale(1.24);
   }
 }
 
-/* Hint Badge next to Pull Bead (Visible when OFF) */
+/* Pull Hint Badge when Lamp is OFF */
 .lamp-pull-hint {
   position: absolute;
-  left: 252px;
-  top: 280px;
-  z-index: 6;
+  left: 224px;
+  top: 256px;
+  z-index: 8;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 8px 13px;
   border-radius: var(--radius-pill);
-  background: rgba(26, 28, 35, 0.92);
-  border: 1px solid rgba(var(--lamp-rgb), 0.42);
-  color: #F3F4F6;
-  font-size: 12px;
+  background: rgba(24, 25, 31, 0.94);
+  border: 1px solid rgba(var(--lamp-rgb), 0.45);
+  color: #F8FAFC;
+  font-size: 11.5px;
   font-weight: 600;
   white-space: nowrap;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.48), 0 0 18px rgba(var(--lamp-rgb), 0.16);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55), 0 0 18px rgba(var(--lamp-rgb), 0.18);
   backdrop-filter: blur(12px);
   cursor: pointer;
   opacity: 1;
-  transform: translateX(0);
   animation: lampHintBob 2.4s ease-in-out infinite;
   transition: opacity 0.35s ease, transform 0.35s ease, border-color 0.25s ease;
 }
 
 .lamp-pull-hint:hover {
   border-color: var(--lamp-color);
-  background: rgba(34, 37, 46, 0.96);
+  background: rgba(34, 37, 46, 0.98);
 }
 
 .lamp-hint-dot {
@@ -3104,7 +3135,7 @@ button.role-badge-pill:hover {
   flex-shrink: 0;
 }
 
-.login-lamp-stage.is-lit .lamp-pull-hint {
+.desk-login-stage.is-lit .lamp-pull-hint {
   opacity: 0;
   pointer-events: none;
   animation: none;
@@ -3120,33 +3151,33 @@ button.role-badge-pill:hover {
   }
 }
 
-/* Color Theme Switcher Pill (Visible when ON) */
+/* Lamp Color Theme Indicator Pill when ON */
 .lamp-color-pill {
   position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%) translateY(8px);
-  z-index: 6;
+  left: 112px;
+  bottom: -24px;
+  transform: translateX(-50%) translateY(6px);
+  z-index: 8;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 12px;
+  padding: 5px 11px;
   border-radius: var(--radius-pill);
-  background: rgba(22, 24, 30, 0.84);
-  border: 1px solid rgba(var(--lamp-rgb), 0.38);
-  color: #E5E7EB;
-  font-size: 11px;
+  background: rgba(20, 18, 17, 0.88);
+  border: 1px solid rgba(var(--lamp-rgb), 0.42);
+  color: #F3F4F6;
+  font-size: 10.5px;
   font-weight: 600;
   white-space: nowrap;
   backdrop-filter: blur(12px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.38);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
   opacity: 0;
   pointer-events: none;
   cursor: pointer;
   transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-color-pill {
+.desk-login-stage.is-lit .lamp-color-pill {
   opacity: 1;
   pointer-events: auto;
   transform: translateX(-50%) translateY(0);
@@ -3158,8 +3189,8 @@ button.role-badge-pill:hover {
 }
 
 .lamp-color-swatch {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--lamp-color);
   box-shadow: 0 0 10px var(--lamp-color);
@@ -3171,175 +3202,287 @@ button.role-badge-pill:hover {
   font-weight: 500;
 }
 
-/* Right Column: Glassmorphism Login Card */
-.lamp-card-col {
+/* ── CENTER-RIGHT: 3D Opening CSS Laptop ── */
+.desk-laptop-slot {
   display: flex;
+  align-items: flex-end;
   justify-content: center;
   width: 100%;
+  padding-bottom: 10px;
 }
 
-.lamp-login-card {
+.laptop-3d-stage {
   position: relative;
-  width: min(410px, 100%);
-  border-radius: 24px;
-  padding: 26px 26px 22px;
-  background: rgba(22, 24, 31, 0.78);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.56),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 0 42px rgba(var(--lamp-rgb), 0.14);
-  overflow: hidden;
+  width: min(760px, 100%);
+  perspective: 1400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  /* Hidden state when Lamp is OFF */
+/* Soft Luminous Display Aura behind Open Laptop Screen */
+.laptop-screen-aura {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 6%;
+  bottom: 42px;
+  border-radius: 26px;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(var(--lamp-rgb), 0.24) 0%,
+    rgba(255, 255, 255, 0.08) 45%,
+    transparent 78%
+  );
+  filter: blur(28px);
   opacity: 0;
   pointer-events: none;
-  transform: translateY(24px) scale(0.97);
-  transition:
-    opacity 0.52s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.58s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.35s ease,
-    box-shadow 0.45s ease;
+  z-index: 0;
+  transition: opacity 0.65s ease, background 0.4s ease;
 }
 
-.login-lamp-stage.is-lit .lamp-login-card {
+.desk-login-stage.is-screen-awake .laptop-screen-aura {
   opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0) scale(1);
-  border-color: rgba(var(--lamp-rgb), 0.34);
-  box-shadow:
-    0 26px 64px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 0 48px rgba(var(--lamp-rgb), 0.16);
 }
 
-.lamp-card-top-glow {
+/* 3D Rotating Screen Lid */
+.laptop-lid-pivot {
+  position: relative;
+  z-index: 3;
+  width: 92%;
+  transform-origin: bottom center;
+  transform-style: preserve-3d;
+  transform: rotateX(-86deg);
+  transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.desk-login-stage.is-laptop-open .laptop-lid-pivot {
+  transform: rotateX(0deg);
+}
+
+/* Closed Lid Metallic Exterior Shell (Back Face) */
+.laptop-lid-back {
   position: absolute;
-  top: -1px;
-  left: 16%;
-  right: 16%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--lamp-color) 50%, transparent 100%);
-  opacity: 0.85;
-  transition: background 0.35s ease;
+  inset: 0;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(155deg, #4b505d 0%, #2c303a 52%, #1b1e24 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: rotateX(180deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: grid;
+  place-items: center;
 }
 
-.lamp-card-head {
-  margin-bottom: 18px;
-}
-
-.lamp-studio-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  background: rgba(var(--lamp-rgb), 0.12);
-  border: 1px solid rgba(var(--lamp-rgb), 0.3);
-  color: var(--lamp-color);
-  font-size: 10px;
+.laptop-lid-emblem {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.36);
+  font-size: 16px;
   font-weight: 800;
-  letter-spacing: 1px;
-  margin-bottom: 10px;
-  transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
-}
-
-.lamp-badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--lamp-color);
-  box-shadow: 0 0 8px var(--lamp-color);
-}
-
-.lamp-card-title {
-  font-size: 24px;
-  font-weight: 800;
+  display: grid;
+  place-items: center;
   letter-spacing: -0.5px;
-  color: #F9FAFB;
-  margin: 0 0 4px;
-  line-height: 1.2;
 }
 
-.lamp-card-subtitle {
-  font-size: 12.5px;
-  color: rgba(229, 231, 235, 0.72);
-  line-height: 1.48;
-  margin: 0;
+/* Inner Matte Black Bezel (Front Face) */
+.laptop-lid-front {
+  position: relative;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: linear-gradient(180deg, #121318 0%, #090a0d 100%);
+  border-radius: 14px 14px 0 0;
+  padding: 10px 10px 11px;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 -10px 30px rgba(0, 0, 0, 0.45);
 }
 
-/* Dark Glass Auth Tabs following --lamp-color */
-.lamp-auth-tabs {
+.laptop-webcam-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.laptop-webcam-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #2b303c;
+  box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.desk-login-stage.is-screen-awake .laptop-webcam-dot {
+  background: #10B981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+}
+
+/* Screen Viewport & Power-On Illumination */
+.laptop-screen-viewport {
+  background: #0b0c0f;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.7);
+}
+
+.laptop-screen-power {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 4px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 16px;
+  min-height: 416px;
+  opacity: 0;
+  pointer-events: none;
+  filter: brightness(0.45);
+  transition: opacity 0.48s ease, filter 0.55s ease, box-shadow 0.5s ease;
 }
 
-.lamp-auth-tabs .auth-tab-btn {
-  padding: 8px 10px;
-  font-size: 12px;
+.desk-login-stage.is-screen-awake .laptop-screen-power {
+  opacity: 1;
+  pointer-events: auto;
+  filter: brightness(1);
+}
+
+/* ── 50% LEFT COLUMN: Elegant Dark Form (#18191C) ── */
+.laptop-col-form {
+  background: #18191C;
+  padding: 20px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #F8FAFC;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sf-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.sf-logo-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #F5B82E;
+  color: #18191C;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(245, 184, 46, 0.32);
+}
+
+.sf-brand-text strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+}
+
+.sf-brand-text small {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.54);
+  margin-top: 2px;
+}
+
+/* Tab Pill Toggle */
+.laptop-auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 13px;
+}
+
+.laptop-auth-tabs .auth-tab-btn {
+  padding: 7px 10px;
+  font-size: 11.5px;
   font-weight: 700;
   color: rgba(229, 231, 235, 0.7);
   background: transparent;
-  border-radius: 9px;
+  border-radius: var(--radius-pill);
   text-align: center;
   cursor: pointer;
   transition: all 0.22s ease;
 }
 
-.lamp-auth-tabs .auth-tab-btn:hover {
+.laptop-auth-tabs .auth-tab-btn:hover {
   color: #FFFFFF;
   background: rgba(255, 255, 255, 0.07);
 }
 
-.lamp-auth-tabs .auth-tab-btn.active {
+.laptop-auth-tabs .auth-tab-btn.active {
   background: var(--lamp-color);
   color: var(--lamp-ink);
-  box-shadow: 0 4px 16px rgba(var(--lamp-rgb), 0.34);
+  box-shadow: 0 4px 14px rgba(var(--lamp-rgb), 0.35);
 }
 
-/* Form Controls */
-.lamp-form {
+@keyframes laptopFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.laptop-panel-fade {
+  animation: laptopFadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.laptop-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .lamp-label {
   display: block;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(243, 244, 246, 0.85);
-  margin-bottom: 5px;
+  color: rgba(243, 244, 246, 0.8);
+  margin-bottom: 4px;
 }
 
 .lamp-input {
   width: 100%;
-  height: 41px;
-  padding: 0 13px;
-  border-radius: 11px;
-  background: rgba(12, 13, 18, 0.68);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  color: #F9FAFB;
-  font-size: 13px;
+  height: 36px;
+  padding: 0 11px;
+  border-radius: 9px;
+  background: rgba(11, 12, 15, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #F8FAFC;
+  font-size: 12px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .lamp-input::placeholder {
-  color: rgba(156, 163, 175, 0.6);
+  color: rgba(156, 163, 175, 0.52);
 }
 
 .lamp-input:focus {
   border-color: var(--lamp-color);
-  background: rgba(15, 17, 23, 0.9);
+  background: #0d0e12;
   box-shadow: 0 0 0 3px rgba(var(--lamp-rgb), 0.22);
 }
 
@@ -3350,19 +3493,19 @@ button.role-badge-pill:hover {
 }
 
 .login-password-wrap .form-control {
-  padding-right: 64px;
+  padding-right: 58px;
 }
 
 .lamp-vis-btn {
   position: absolute;
-  right: 7px;
-  padding: 4px 10px;
-  font-size: 11px;
+  right: 6px;
+  padding: 3px 8px;
+  font-size: 10.5px;
   font-weight: 700;
   color: rgba(229, 231, 235, 0.78);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 7px;
+  border-radius: 6px;
   transition: all 0.18s ease;
 }
 
@@ -3372,266 +3515,471 @@ button.role-badge-pill:hover {
   background: rgba(255, 255, 255, 0.14);
 }
 
-/* Dynamic Primary Submit Button */
 .lamp-submit-btn {
   width: 100%;
-  height: 43px;
-  margin-top: 4px;
-  border-radius: 12px;
+  height: 38px;
+  margin-top: 3px;
+  border-radius: 10px;
   border: none;
   background: var(--lamp-color);
   color: var(--lamp-ink);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 800;
-  letter-spacing: 0.1px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(var(--lamp-rgb), 0.3);
+  box-shadow: 0 8px 20px rgba(var(--lamp-rgb), 0.28);
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, filter 0.2s ease, background 0.3s ease, color 0.3s ease;
 }
 
 .lamp-submit-btn:hover {
   filter: brightness(1.06);
   transform: translateY(-1px);
-  box-shadow: 0 12px 30px rgba(var(--lamp-rgb), 0.42);
+  box-shadow: 0 10px 26px rgba(var(--lamp-rgb), 0.42);
 }
 
 .lamp-submit-btn:active {
   transform: scale(0.98);
 }
 
-/* Alerts & Notices inside Dark Glass Card */
 .lamp-alert-error {
-  background: rgba(239, 68, 68, 0.14);
+  background: rgba(239, 68, 68, 0.15);
   color: #FCA5A5;
-  border: 1px solid rgba(239, 68, 68, 0.38);
-  border-radius: 10px;
-  padding: 9px 12px;
-  font-size: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 11px;
   font-weight: 600;
-  margin-bottom: 12px;
-  line-height: 1.45;
+  margin-bottom: 9px;
+  line-height: 1.4;
 }
 
 .lamp-alert-success {
   background: rgba(var(--lamp-rgb), 0.14);
   color: var(--lamp-color);
   border: 1px solid rgba(var(--lamp-rgb), 0.4);
-  border-radius: 10px;
-  padding: 9px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  line-height: 1.45;
-}
-
-.lamp-role-notice {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 9px 11px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 7px 10px;
   font-size: 11px;
-  color: rgba(229, 231, 235, 0.78);
-  line-height: 1.45;
+  font-weight: 600;
+  margin-bottom: 9px;
+  line-height: 1.4;
 }
 
-.lamp-helper-hint {
-  margin-top: 12px;
+/* Quick Demo Login inside Left Column */
+.laptop-demo-box {
+  margin-top: 13px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.laptop-demo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.laptop-demo-head strong {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.76);
+  letter-spacing: 0.2px;
+}
+
+.lamp-reset-link {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--lamp-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.laptop-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.laptop-demo-chip {
+  padding: 6px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  color: #F3F4F6;
+  font-size: 10.5px;
+  font-weight: 700;
   text-align: center;
-  font-size: 11.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.laptop-demo-chip:hover {
+  border-color: var(--lamp-color);
+  background: rgba(var(--lamp-rgb), 0.16);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.laptop-switch-hint {
+  margin-top: 11px;
+  text-align: center;
+  font-size: 11px;
   color: rgba(209, 213, 219, 0.68);
 }
 
 .lamp-inline-link {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--lamp-color);
-  text-decoration: underline;
-  cursor: pointer;
-  transition: opacity 0.2s ease, color 0.3s ease;
-}
-
-.lamp-inline-link:hover {
-  opacity: 0.85;
-}
-
-/* Quick Demo Login Section */
-.lamp-demo-box {
-  margin-top: 16px;
-  padding: 12px 13px;
-  border-radius: 15px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-}
-
-.lamp-demo-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 9px;
-}
-
-.lamp-demo-head strong {
-  font-size: 11.5px;
-  color: #F3F4F6;
-}
-
-.lamp-demo-head span {
-  font-size: 10px;
-  color: rgba(156, 163, 175, 0.82);
-}
-
-.lamp-demo-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
-}
-
-.lamp-demo-chip {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 8px 9px;
-  border-radius: 10px;
-  background: rgba(12, 13, 18, 0.64);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #F3F4F6;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.lamp-demo-chip:hover {
-  border-color: var(--lamp-color);
-  background: rgba(var(--lamp-rgb), 0.12);
-  transform: translateY(-2px);
-}
-
-.lamp-demo-chip:active {
-  transform: scale(0.96);
-}
-
-.lamp-chip-role {
   font-size: 11px;
   font-weight: 700;
-  color: #F9FAFB;
-  line-height: 1.2;
-}
-
-.lamp-chip-email {
-  font-size: 9.5px;
-  color: rgba(156, 163, 175, 0.85);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
-
-.lamp-demo-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-  padding-top: 9px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.lamp-disclaimer {
-  font-size: 9.5px;
-  color: rgba(156, 163, 175, 0.72);
-}
-
-.lamp-disclaimer code {
-  color: rgba(229, 231, 235, 0.85);
-}
-
-.lamp-reset-link {
-  font-size: 10.5px;
-  font-weight: 700;
   color: var(--lamp-color);
   text-decoration: underline;
   cursor: pointer;
 }
 
-/* Responsive Desk Lamp Stage (Tablet & Mobile: Lamp stacked above Card) */
-@media (max-width: 900px) {
-  .login-lamp-stage {
-    padding: 20px 16px 32px;
-    align-items: flex-start;
+/* ── 50% RIGHT COLUMN: Clean Warm Light Editorial Panel (#FAF8F5) ── */
+.laptop-col-editorial {
+  position: relative;
+  background: #FAF8F5;
+  color: #18191C;
+  padding: 26px 26px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.laptop-col-editorial::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 92% 10%, rgba(var(--lamp-rgb), 0.14) 0%, transparent 52%),
+    radial-gradient(circle at 12% 94%, rgba(var(--lamp-rgb), 0.08) 0%, transparent 45%);
+  transition: background 0.4s ease;
+}
+
+.editorial-accent-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--lamp-color);
+  transition: background 0.35s ease;
+}
+
+@keyframes editorialFadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.editorial-content {
+  position: relative;
+  z-index: 1;
+  margin: auto 0;
+}
+
+.editorial-fade-slide {
+  animation: editorialFadeSlide 0.38s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.editorial-eyebrow {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  color: #78716C;
+  background: rgba(24, 25, 28, 0.06);
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 14px;
+}
+
+.editorial-heading {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  line-height: 1.18;
+  color: #18191C;
+  margin: 0 0 12px;
+}
+
+.editorial-subtext {
+  font-size: 13px;
+  line-height: 1.62;
+  color: #57534E;
+  margin: 0;
+}
+
+.editorial-divider {
+  width: 42px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--lamp-color);
+  margin: 18px 0 14px;
+  transition: background 0.35s ease;
+}
+
+.editorial-meta-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #78716C;
+  margin-bottom: 7px;
+}
+
+.editorial-role-tags {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #44403C;
+}
+
+.editorial-role-tags span:nth-child(odd) {
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: #EFECE6;
+  border: 1px solid #E2DDD4;
+}
+
+.editorial-meta-note {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #57534E;
+  margin: 0;
+}
+
+.editorial-footnote {
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
+  color: #8A847D;
+  padding-top: 12px;
+  border-top: 1px solid rgba(24, 25, 28, 0.08);
+}
+
+.editorial-footnote code {
+  color: #44403C;
+  font-weight: 600;
+}
+
+/* ── Metallic Silver / Space-Gray Laptop Base Chassis ── */
+.laptop-base-chassis {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.laptop-base-deck {
+  width: 96%;
+  height: 22px;
+  background: linear-gradient(180deg, #6b7280 0%, #9ca3af 52%, #b5bcc7 100%);
+  clip-path: polygon(2.2% 0%, 97.8% 0%, 100% 100%, 0% 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.laptop-hinge-bar {
+  width: 58%;
+  height: 3px;
+  border-radius: 2px;
+  background: #1f232b;
+}
+
+.laptop-keyboard-well {
+  width: 68%;
+  height: 6px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  background: rgba(17, 19, 24, 0.55);
+}
+
+.laptop-keyboard-well span {
+  background: rgba(24, 27, 34, 0.88);
+  border-radius: 1px;
+}
+
+.laptop-trackpad {
+  width: 18%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(55, 65, 81, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.laptop-base-front {
+  width: 100%;
+  height: 11px;
+  border-radius: 2px 2px 12px 12px;
+  background: linear-gradient(180deg, #cfd5de 0%, #8b93a1 55%, #555c68 100%);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
+.laptop-thumb-notch {
+  width: 68px;
+  height: 4px;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(180deg, #525965 0%, #7d8594 100%);
+}
+
+.laptop-desk-shadow {
+  width: 96%;
+  height: 16px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, transparent 74%);
+  pointer-events: none;
+}
+
+/* ── Responsive Desktop Setup Login ── */
+@media (max-height: 700px) and (min-width: 981px) {
+  .desk-scene {
+    padding-bottom: 52px;
+  }
+  .lamp-assembly {
+    width: 280px;
+    height: 360px;
+  }
+  .laptop-screen-power {
+    min-height: 375px;
+  }
+  .wooden-desk-surface {
+    height: 110px;
+  }
+}
+
+@media (max-width: 980px) {
+  .desk-login-stage {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    justify-content: flex-start;
   }
 
-  .lamp-split-container {
+  .desk-scene {
     grid-template-columns: 1fr;
-    gap: 16px;
-    max-width: 440px;
+    gap: 12px;
+    padding: 16px 18px 80px;
+    max-width: 720px;
   }
 
   .lamp-assembly {
-    width: 280px;
-    height: 310px;
+    width: 240px;
+    height: 295px;
   }
 
   .lamp-spotlight-cone {
-    top: 90px;
+    top: 86px;
     left: 50%;
-    width: 460px;
-    height: 580px;
+    width: 520px;
+    height: 540px;
     transform: translateX(-50%) scale(0.86);
     transform-origin: 50% 6%;
     clip-path: polygon(44% 0%, 62% 0%, 100% 100%, 0% 100%);
     background: radial-gradient(
-      ellipse 80% 70% at 52% 8%,
+      ellipse 80% 72% at 52% 8%,
       rgba(var(--lamp-rgb), 0.34) 0%,
       rgba(var(--lamp-rgb), 0.14) 44%,
       transparent 88%
     );
   }
 
-  .login-lamp-stage.is-lit .lamp-spotlight-cone {
+  .desk-login-stage.is-lit .lamp-spotlight-cone {
     transform: translateX(-50%) scale(1);
   }
 
   .lamp-spotlight-core {
-    top: 108px;
-    left: 162px;
-    width: 190px;
-    height: 220px;
+    top: 98px;
+    left: 145px;
+    width: 170px;
+    height: 190px;
   }
 
   .lamp-pull-hint {
     left: 50%;
     top: auto;
-    bottom: 6px;
+    bottom: -4px;
     transform: translateX(-50%);
     animation: none;
   }
 
-  .login-lamp-stage.is-lit .lamp-pull-hint {
+  .desk-login-stage.is-lit .lamp-pull-hint {
     transform: translateX(-50%) translateY(6px);
   }
 
   .lamp-color-pill {
-    bottom: -4px;
+    left: 50%;
+    bottom: -14px;
   }
 }
 
-@media (max-width: 480px) {
-  .lamp-login-card {
-    padding: 22px 18px 18px;
+@media (max-width: 680px) {
+  .laptop-lid-pivot {
+    width: 100%;
   }
 
-  .lamp-demo-grid {
+  .laptop-screen-power {
     grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .laptop-col-editorial {
+    order: -1;
+    padding: 18px 18px 14px;
+  }
+
+  .editorial-heading {
+    font-size: 21px;
+    margin-bottom: 6px;
+  }
+
+  .editorial-subtext {
+    font-size: 12px;
+  }
+
+  .editorial-divider,
+  .editorial-footer-meta,
+  .editorial-footnote {
+    display: none;
+  }
+
+  .laptop-col-form {
+    padding: 18px 18px 16px;
+    border-right: none;
   }
 }
 

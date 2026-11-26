@@ -1,9 +1,10 @@
 /**
- * Halaman Autentikasi Interactive Desk Lamp — StudioFlow · Tim Kreatif YMQ
- * - Interaksi lampu meja arsitek: tarik/klik tali sakelar untuk menyalakan & memunculkan form.
- * - Klik kap lampu saat menyala untuk mengganti 5 warna cahaya secara dinamis.
- * - Efek suara mekanis & dengung listrik halus via Web Audio API (aman dengan fallback).
- * - Mempertahankan 2 Tab: Sign In (Masuk) & Aktivasi Akun (Invite-Only) + Quick Demo Login.
+ * Halaman Autentikasi Interactive Desktop Setup — StudioFlow · Tim Kreatif YMQ
+ * - Panggung ruangan gelap minimalis dengan meja kerja kayu hangat di bagian bawah.
+ * - Kiri: Lampu meja arsitek berlengan dua (SVG) dengan tali sakelar (klik/tarik) & 5 tema warna cahaya.
+ * - Tengah-Kanan: Laptop 3D CSS yang otomatis terbuka setelah lampu dinyalakan (jeda 250ms).
+ * - Layar Laptop Split-Screen 50:50: Kolom Kiri Gelap (#18191C) Form + Quick Demo Login,
+ *   Kolom Kanan Terang (#FAF8F5) Panel Pesan Editorial Dinamis (Sign In vs Aktivasi Akun).
  * Catatan: Simulasi front-end (state / localStorage), bukan autentikasi server nyata.
  */
 
@@ -28,6 +29,8 @@ let authUiState = {
   prefillEmail: '',
   successBanner: '',
   lampOn: false,
+  laptopOpen: false,
+  screenAwake: false,
   themeIndex: 0,
 };
 
@@ -51,8 +54,8 @@ function getAudioContextSafe() {
 }
 
 /**
- * Efek suara klik sakelar mekanis + dengung listrik ringan (Web Audio API).
- * Aman dengan fallback senyap jika browser memblokir audio.
+ * Efek suara klik mekanis tali sakelar & dengung listrik ringan (Web Audio API).
+ * Aman dengan fallback senyap bila browser memblokir autoplay audio.
  */
 function playLampSwitchSound(turningOn) {
   try {
@@ -61,12 +64,12 @@ function playLampSwitchSound(turningOn) {
 
     const now = ctx.currentTime;
 
-    // 1. Klik mekanis pendek (filtered noise burst)
-    const bufferSize = Math.floor(ctx.sampleRate * 0.025);
+    // 1. Klik sakelar mekanis
+    const bufferSize = Math.floor(ctx.sampleRate * 0.024);
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i += 1) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.28));
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.26));
     }
 
     const noise = ctx.createBufferSource();
@@ -74,24 +77,24 @@ function playLampSwitchSound(turningOn) {
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(turningOn ? 2400 : 1650, now);
+    filter.frequency.setValueAtTime(turningOn ? 2500 : 1600, now);
     filter.Q.setValueAtTime(1.8, now);
 
     const clickGain = ctx.createGain();
     clickGain.gain.setValueAtTime(0.24, now);
-    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.024);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.023);
 
     noise.connect(filter);
     filter.connect(clickGain);
     clickGain.connect(ctx.destination);
     noise.start(now);
 
-    // 2. Ketukan pegas logam ringan
+    // 2. Ketukan pegas logam pendek
     const snapOsc = ctx.createOscillator();
     const snapGain = ctx.createGain();
     snapOsc.type = 'triangle';
-    snapOsc.frequency.setValueAtTime(turningOn ? 620 : 420, now);
-    snapOsc.frequency.exponentialRampToValueAtTime(turningOn ? 210 : 130, now + 0.032);
+    snapOsc.frequency.setValueAtTime(turningOn ? 640 : 410, now);
+    snapOsc.frequency.exponentialRampToValueAtTime(turningOn ? 220 : 120, now + 0.032);
 
     snapGain.gain.setValueAtTime(0.11, now);
     snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.034);
@@ -101,7 +104,7 @@ function playLampSwitchSound(turningOn) {
     snapOsc.start(now);
     snapOsc.stop(now + 0.036);
 
-    // 3. Dengung listrik hangat singkat saat lampu menyala
+    // 3. Dengung listrik hangat ringan saat lampu menyala
     if (turningOn) {
       const humOsc = ctx.createOscillator();
       const humHarmonic = ctx.createOscillator();
@@ -113,8 +116,8 @@ function playLampSwitchSound(turningOn) {
       humHarmonic.frequency.setValueAtTime(120, now + 0.015);
 
       humGain.gain.setValueAtTime(0.0001, now + 0.015);
-      humGain.gain.linearRampToValueAtTime(0.028, now + 0.08);
-      humGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.48);
+      humGain.gain.linearRampToValueAtTime(0.026, now + 0.08);
+      humGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.45);
 
       humOsc.connect(humGain);
       humHarmonic.connect(humGain);
@@ -122,17 +125,14 @@ function playLampSwitchSound(turningOn) {
 
       humOsc.start(now + 0.015);
       humHarmonic.start(now + 0.015);
-      humOsc.stop(now + 0.5);
-      humHarmonic.stop(now + 0.5);
+      humOsc.stop(now + 0.48);
+      humHarmonic.stop(now + 0.48);
     }
   } catch {
-    // Fallback aman bila AudioContext tidak tersedia / diblokir
+    // Fallback aman bila audio tidak didukung / diblokir
   }
 }
 
-/**
- * Efek suara ketukan halus saat mengganti warna cahaya pada kap lampu.
- */
 function playColorTickSound() {
   try {
     const ctx = getAudioContextSafe();
@@ -144,9 +144,9 @@ function playColorTickSound() {
 
     osc.type = 'sine';
     osc.frequency.setValueAtTime(520, now);
-    osc.frequency.exponentialRampToValueAtTime(880, now + 0.055);
+    osc.frequency.exponentialRampToValueAtTime(860, now + 0.055);
 
-    gain.gain.setValueAtTime(0.06, now);
+    gain.gain.setValueAtTime(0.055, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
     osc.connect(gain);
@@ -164,6 +164,8 @@ export function resetAuthUiState() {
     prefillEmail: '',
     successBanner: '',
     lampOn: false,
+    laptopOpen: false,
+    screenAwake: false,
     themeIndex: 0,
   };
 }
@@ -179,54 +181,66 @@ export function renderLogin(tabOverride = null) {
   const isSignIn = authUiState.activeTab !== 'activate';
   const theme = getCurrentTheme();
   const isOn = authUiState.lampOn;
+  const isOpen = authUiState.laptopOpen;
+  const isAwake = authUiState.screenAwake;
+
+  const editorialTitle = isSignIn
+    ? 'Selamat Bekerja!'
+    : 'Salam Kenal & Selamat Bergabung!';
+  const editorialSub = isSignIn
+    ? 'Mari buat karya terbaik hari ini bersama tim. Setiap ide dan naskahmu membawa manfaat.'
+    : 'Senang menyambutmu di ruang kerja kreatif StudioFlow. Aktifkan akunmu dan mari berkolaborasi!';
+  const editorialEyebrow = isSignIn
+    ? 'MASUK KERJA · RUANG STUDIO'
+    : 'ANGGOTA BARU · INVITE-ONLY';
 
   return `
     <div
       id="login-lamp-stage"
-      class="login-lamp-stage ${isOn ? 'is-lit' : 'is-dark'}"
+      class="desk-login-stage ${isOn ? 'is-lit' : 'is-dark'} ${isOpen ? 'is-laptop-open' : ''} ${isAwake ? 'is-screen-awake' : ''}"
       style="--lamp-color: ${theme.hex}; --lamp-rgb: ${theme.rgb}; --lamp-ink: ${theme.ink};"
       data-lamp-on="${isOn ? 'true' : 'false'}"
+      data-laptop-open="${isOpen ? 'true' : 'false'}"
       data-lamp-theme="${escapeHtml(theme.id)}"
     >
-      <!-- Studio Floor & Ambient Room Lighting -->
-      <div class="lamp-room-ambient" aria-hidden="true"></div>
-      <div class="lamp-floor-plane" aria-hidden="true"></div>
+      <!-- Ambient Room Wash when Lamp is ON -->
+      <div class="desk-room-glow" aria-hidden="true"></div>
 
-      <div class="lamp-split-container">
-        <!-- LEFT STAGE: Interactive Architect Desk Lamp -->
-        <div class="lamp-visual-col">
+      <!-- Main Scene sitting directly on top of the Wooden Desk -->
+      <div class="desk-scene">
+        <!-- LEFT: Architect Dual-Arm Desk Lamp -->
+        <div class="desk-lamp-slot">
           <div class="lamp-assembly">
-            <!-- Diagonal Spotlight Cone -->
+            <!-- Diagonal Volumetric Spotlight Cone aimed at the Laptop -->
             <div class="lamp-spotlight-cone" aria-hidden="true"></div>
             <div class="lamp-spotlight-core" aria-hidden="true"></div>
 
-            <!-- Architect Dual-Arm Desk Lamp SVG -->
             <svg
               class="desk-lamp-svg"
-              viewBox="0 0 360 430"
+              viewBox="0 0 340 430"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              aria-label="Lampu meja studio interaktif"
+              aria-label="Lampu meja arsitek interaktif"
             >
               <defs>
                 <linearGradient id="lampMetalDark" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#3A3F4B" />
-                  <stop offset="50%" stop-color="#22252D" />
-                  <stop offset="100%" stop-color="#15171C" />
+                  <stop offset="0%" stop-color="#424754" />
+                  <stop offset="50%" stop-color="#252932" />
+                  <stop offset="100%" stop-color="#14161B" />
                 </linearGradient>
                 <linearGradient id="lampMetalRod" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#4B5263" />
-                  <stop offset="50%" stop-color="#2B2F3A" />
-                  <stop offset="100%" stop-color="#191B22" />
+                  <stop offset="0%" stop-color="#52596B" />
+                  <stop offset="50%" stop-color="#2D323E" />
+                  <stop offset="100%" stop-color="#191C23" />
                 </linearGradient>
                 <linearGradient id="lampShadeBody" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#3E4452" />
-                  <stop offset="45%" stop-color="#252933" />
+                  <stop offset="0%" stop-color="#444A59" />
+                  <stop offset="45%" stop-color="#272B35" />
                   <stop offset="100%" stop-color="#14161B" />
                 </linearGradient>
                 <linearGradient id="lampBaseTop" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#363B47" />
-                  <stop offset="100%" stop-color="#181A20" />
+                  <stop offset="0%" stop-color="#3C414E" />
+                  <stop offset="100%" stop-color="#17191F" />
                 </linearGradient>
                 <radialGradient id="bulbGlowGrad" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.98" />
@@ -238,82 +252,65 @@ export function renderLogin(tabOverride = null) {
                 </filter>
               </defs>
 
-              <!-- Desk Contact Shadow & Light Pool -->
-              <ellipse cx="122" cy="398" rx="92" ry="13" fill="rgba(0,0,0,0.62)" />
-              <ellipse class="lamp-desk-pool" cx="252" cy="396" rx="108" ry="16" />
+              <!-- Grounded Contact Shadow on Wooden Desk -->
+              <ellipse cx="112" cy="402" rx="88" ry="11" fill="rgba(0,0,0,0.68)" />
 
-              <!-- Weighted Desk Base -->
+              <!-- Weighted Metallic Base -->
               <path
-                d="M52 390 C52 379 74 373 118 373 C162 373 184 379 184 390 L186 396 C186 400 156 403 118 403 C80 403 50 400 50 396 Z"
+                d="M46 392 C46 381 68 375 112 375 C156 375 178 381 178 392 L180 398 C180 403 150 406 112 406 C74 406 44 403 44 398 Z"
                 fill="url(#lampBaseTop)"
-                stroke="rgba(255,255,255,0.12)"
+                stroke="rgba(255,255,255,0.14)"
                 stroke-width="1"
               />
               <!-- Base Collar Stem -->
-              <rect x="105" y="352" width="26" height="24" rx="6" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
-              <circle cx="118" cy="360" r="5" fill="#111318" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" />
+              <rect x="99" y="354" width="26" height="24" rx="6" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+              <circle cx="112" cy="362" r="5" fill="#111318" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" />
 
               <!-- Lower Articulated Dual Arm -->
-              <line x1="112" y1="358" x2="64" y2="226" stroke="url(#lampMetalRod)" stroke-width="7" stroke-linecap="round" />
-              <line x1="124" y1="354" x2="76" y2="222" stroke="url(#lampMetalRod)" stroke-width="4.5" stroke-linecap="round" />
-              <!-- Lower Spring Detail -->
-              <line x1="101" y1="326" x2="77" y2="260" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="3 3" />
+              <line x1="106" y1="360" x2="58" y2="226" stroke="url(#lampMetalRod)" stroke-width="7" stroke-linecap="round" />
+              <line x1="118" y1="356" x2="70" y2="222" stroke="url(#lampMetalRod)" stroke-width="4.5" stroke-linecap="round" />
+              <line x1="95" y1="326" x2="71" y2="260" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-dasharray="3 3" />
 
               <!-- Upper Articulated Dual Arm -->
-              <line x1="68" y1="222" x2="188" y2="112" stroke="url(#lampMetalRod)" stroke-width="7" stroke-linecap="round" />
-              <line x1="76" y1="230" x2="196" y2="120" stroke="url(#lampMetalRod)" stroke-width="4.5" stroke-linecap="round" />
-              <!-- Upper Tension Detail -->
-              <line x1="106" y1="194" x2="154" y2="150" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="3 3" />
+              <line x1="62" y1="222" x2="180" y2="112" stroke="url(#lampMetalRod)" stroke-width="7" stroke-linecap="round" />
+              <line x1="70" y1="230" x2="188" y2="120" stroke="url(#lampMetalRod)" stroke-width="4.5" stroke-linecap="round" />
+              <line x1="100" y1="194" x2="146" y2="150" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-dasharray="3 3" />
 
               <!-- Elbow Joint -->
-              <circle cx="70" cy="225" r="13" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.18)" stroke-width="1.4" />
-              <circle cx="70" cy="225" r="5" fill="#14161B" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" />
+              <circle cx="64" cy="225" r="13" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.18)" stroke-width="1.4" />
+              <circle cx="64" cy="225" r="5" fill="#14161B" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" />
 
-              <!-- Pull Cord Assembly (Interactive Click & Drag) -->
+              <!-- Interactive Pull Cord (Click & Drag) -->
               <g
                 id="lamp-cord-btn"
                 class="lamp-cord-group"
                 role="button"
                 tabindex="0"
                 aria-pressed="${isOn ? 'true' : 'false'}"
-                aria-label="${isOn ? 'Tarik tali untuk mematikan lampu' : 'Tarik tali untuk menyalakan lampu'}"
+                aria-label="${isOn ? 'Tarik tali untuk mematikan lampu dan menutup laptop' : 'Tarik tali untuk menyalakan lampu dan membuka laptop'}"
               >
-                <!-- Large invisible hit area for effortless click/drag -->
-                <rect x="206" y="160" width="48" height="158" fill="transparent" />
-                <!-- Cord String (top tucked inside shade so pull stays connected) -->
+                <rect x="196" y="158" width="52" height="162" fill="transparent" />
                 <line
                   class="lamp-cord-line"
-                  x1="230"
+                  x1="222"
                   y1="158"
-                  x2="230"
-                  y2="288"
-                  stroke="#9CA3AF"
+                  x2="222"
+                  y2="290"
+                  stroke="#A1A8B6"
                   stroke-width="2.2"
                   stroke-linecap="round"
                 />
-                <!-- Small Knot Ring -->
-                <circle cx="230" cy="285" r="3" fill="#CBD5E1" />
-                <!-- Pull Bead (Bandul Bulat) -->
-                <circle
-                  class="lamp-cord-bead-halo"
-                  cx="230"
-                  cy="296"
-                  r="15"
-                />
-                <circle
-                  class="lamp-cord-bead"
-                  cx="230"
-                  cy="296"
-                  r="9.5"
-                />
-                <circle cx="227" cy="292.5" r="2.6" fill="rgba(255,255,255,0.65)" />
+                <circle cx="222" cy="286" r="3" fill="#E2E8F0" />
+                <circle class="lamp-cord-bead-halo" cx="222" cy="298" r="15" />
+                <circle class="lamp-cord-bead" cx="222" cy="298" r="9.5" />
+                <circle cx="219" cy="294.5" r="2.6" fill="rgba(255,255,255,0.7)" />
               </g>
 
               <!-- Head Swivel Joint -->
-              <circle cx="192" cy="116" r="11" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.2)" stroke-width="1.3" />
-              <circle cx="192" cy="116" r="4.2" fill="#121419" />
+              <circle cx="184" cy="116" r="11" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.22)" stroke-width="1.3" />
+              <circle cx="184" cy="116" r="4.2" fill="#121419" />
 
-              <!-- Lamp Shade (Clickable when ON to cycle light color) -->
+              <!-- Lamp Shade (Clickable when ON to cycle color) -->
               <g
                 id="lamp-shade-btn"
                 class="lamp-shade-group"
@@ -321,65 +318,33 @@ export function renderLogin(tabOverride = null) {
                 tabindex="0"
                 aria-label="Klik kap lampu untuk mengganti warna cahaya (${escapeHtml(theme.name)})"
               >
-                <!-- Glowing Halo behind Bulb when ON -->
-                <circle class="lamp-bulb-halo" cx="250" cy="176" r="34" fill="url(#bulbGlowGrad)" filter="url(#bulbBlur)" />
+                <circle class="lamp-bulb-halo" cx="242" cy="174" r="34" fill="url(#bulbGlowGrad)" filter="url(#bulbBlur)" />
+                <g transform="rotate(34 188 118)">
+                  <rect x="176" y="102" width="30" height="32" rx="10" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.16)" stroke-width="1.2" />
+                  <line x1="185" y1="110" x2="194" y2="110" stroke="rgba(255,255,255,0.22)" stroke-width="1.6" stroke-linecap="round" />
+                  <line x1="185" y1="117" x2="194" y2="117" stroke="rgba(255,255,255,0.22)" stroke-width="1.6" stroke-linecap="round" />
 
-                <!-- Shade Back Neck Cap -->
-                <g transform="rotate(36 196 118)">
-                  <rect x="184" y="102" width="30" height="32" rx="10" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.16)" stroke-width="1.2" />
-                  <!-- Ventilation Slots -->
-                  <line x1="193" y1="110" x2="202" y2="110" stroke="rgba(255,255,255,0.2)" stroke-width="1.6" stroke-linecap="round" />
-                  <line x1="193" y1="117" x2="202" y2="117" stroke="rgba(255,255,255,0.2)" stroke-width="1.6" stroke-linecap="round" />
-
-                  <!-- Main Architect Conical Shade -->
                   <path
-                    d="M210 100 C236 96 274 74 288 70 L288 166 C274 162 236 140 210 136 Z"
+                    d="M202 100 C228 96 266 74 280 70 L280 166 C266 162 228 140 202 136 Z"
                     fill="url(#lampShadeBody)"
                     stroke="rgba(255,255,255,0.2)"
                     stroke-width="1.3"
                   />
-                  <!-- Top Specular Highlight on Shade -->
                   <path
-                    d="M218 104 C240 99 266 85 280 79"
-                    stroke="rgba(255,255,255,0.24)"
+                    d="M210 104 C232 99 258 85 272 79"
+                    stroke="rgba(255,255,255,0.26)"
                     stroke-width="2"
                     stroke-linecap="round"
                   />
-
-                  <!-- Inner Shade Opening Ellipse -->
-                  <ellipse
-                    class="lamp-shade-mouth"
-                    cx="288"
-                    cy="118"
-                    rx="14"
-                    ry="48"
-                  />
-
-                  <!-- Light Bulb inside Shade -->
-                  <ellipse
-                    class="lamp-bulb-glass"
-                    cx="278"
-                    cy="118"
-                    rx="15"
-                    ry="17"
-                  />
-                  <circle class="lamp-bulb-core" cx="280" cy="118" r="7" />
-
-                  <!-- Rim Accent Line -->
-                  <ellipse
-                    class="lamp-shade-rim"
-                    cx="288"
-                    cy="118"
-                    rx="14"
-                    ry="48"
-                    fill="none"
-                    stroke-width="2"
-                  />
+                  <ellipse class="lamp-shade-mouth" cx="280" cy="118" rx="14" ry="48" />
+                  <ellipse class="lamp-bulb-glass" cx="270" cy="118" rx="15" ry="17" />
+                  <circle class="lamp-bulb-core" cx="272" cy="118" r="7" />
+                  <ellipse class="lamp-shade-rim" cx="280" cy="118" rx="14" ry="48" fill="none" stroke-width="2" />
                 </g>
               </g>
             </svg>
 
-            <!-- Hint Badge when Lamp is OFF (next to pull cord bead) -->
+            <!-- Hint Badge next to Pull Bead when OFF -->
             <button
               type="button"
               id="lamp-pull-hint-btn"
@@ -390,7 +355,7 @@ export function renderLogin(tabOverride = null) {
               <span>Tarik tali untuk menyalakan</span>
             </button>
 
-            <!-- Color Theme Indicator Pill when Lamp is ON -->
+            <!-- Active Color Indicator Pill when ON -->
             <button
               type="button"
               id="lamp-color-pill-btn"
@@ -400,222 +365,274 @@ export function renderLogin(tabOverride = null) {
             >
               <span class="lamp-color-swatch" aria-hidden="true"></span>
               <span id="lamp-color-name">${escapeHtml(theme.name)}</span>
-              <span class="lamp-color-tip">· Klik kap ganti warna</span>
+              <span class="lamp-color-tip">· Klik kap</span>
             </button>
           </div>
         </div>
 
-        <!-- RIGHT STAGE: Glassmorphism Login Card -->
-        <div class="lamp-card-col">
-          <div class="login-card lamp-login-card" aria-hidden="${isOn ? 'false' : 'true'}">
-            <div class="lamp-card-top-glow" aria-hidden="true"></div>
+        <!-- CENTER-RIGHT: 3D Opening CSS Laptop -->
+        <div class="desk-laptop-slot">
+          <div class="laptop-3d-stage">
+            <!-- Soft Display Ambient Glow behind Screen when Awake -->
+            <div class="laptop-screen-aura" aria-hidden="true"></div>
 
-            <div class="lamp-card-head">
-              <div class="lamp-studio-badge">
-                <span class="lamp-badge-dot" aria-hidden="true"></span>
-                <span>STUDIOFLOW • TIM KREATIF YMQ</span>
+            <!-- 3D Rotating Laptop Lid -->
+            <div class="laptop-lid-pivot" aria-hidden="${isAwake ? 'false' : 'true'}">
+              <!-- Outer Closed Lid Shell (visible when rotated shut) -->
+              <div class="laptop-lid-back" aria-hidden="true">
+                <div class="laptop-lid-emblem">SF</div>
               </div>
-              <h1 class="lamp-card-title">Selamat Datang</h1>
-              <p class="lamp-card-subtitle">
-                ${isSignIn
-                  ? 'Masuk ke ruang kerja operasional konten dengan akun aktif Anda.'
-                  : 'Aktivasi akun invite-only untuk anggota baru yang didaftarkan Ketua Tim.'}
-              </p>
-            </div>
 
-            <div class="auth-tabs lamp-auth-tabs" role="tablist" aria-label="Pilih mode autentikasi">
-              <button
-                type="button"
-                id="tab-signin"
-                role="tab"
-                class="auth-tab-btn ${isSignIn ? 'active' : ''}"
-                data-auth-tab="signin"
-                aria-selected="${isSignIn ? 'true' : 'false'}"
-                aria-controls="panel-signin"
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                id="tab-activate"
-                role="tab"
-                class="auth-tab-btn ${!isSignIn ? 'active' : ''}"
-                data-auth-tab="activate"
-                aria-selected="${!isSignIn ? 'true' : 'false'}"
-                aria-controls="panel-activate"
-              >
-                Aktivasi Akun
-              </button>
-            </div>
+              <!-- Inner Bezel & Glowing Split-Screen Display -->
+              <div class="laptop-lid-front">
+                <div class="laptop-webcam-bar" aria-hidden="true">
+                  <span class="laptop-webcam-dot"></span>
+                </div>
 
-            ${isSignIn ? `
-              <div id="panel-signin" role="tabpanel" aria-labelledby="tab-signin">
-                ${authUiState.successBanner ? `
-                  <div id="login-success" class="login-success-alert lamp-alert-success" role="status">
-                    ✓ ${escapeHtml(authUiState.successBanner)}
-                  </div>
-                ` : ''}
+                <div class="laptop-screen-viewport">
+                  <div class="laptop-screen-power" id="laptop-screen-content">
+                    <!-- 50% LEFT COLUMN: Dark Form Area (#18191C) -->
+                    <div class="laptop-col-form">
+                      <div class="sf-brand-row">
+                        <div class="sf-logo-box" aria-hidden="true">SF</div>
+                        <div class="sf-brand-text">
+                          <strong>StudioFlow</strong>
+                          <small>TIM KREATIF YMQ</small>
+                        </div>
+                      </div>
 
-                <div id="login-error" class="login-error-alert lamp-alert-error" role="alert" style="display:none;"></div>
+                      <div class="auth-tabs laptop-auth-tabs" role="tablist" aria-label="Pilih mode autentikasi">
+                        <button
+                          type="button"
+                          id="tab-signin"
+                          role="tab"
+                          class="auth-tab-btn ${isSignIn ? 'active' : ''}"
+                          data-auth-tab="signin"
+                          aria-selected="${isSignIn ? 'true' : 'false'}"
+                          aria-controls="panel-signin"
+                        >
+                          Sign In
+                        </button>
+                        <button
+                          type="button"
+                          id="tab-activate"
+                          role="tab"
+                          class="auth-tab-btn ${!isSignIn ? 'active' : ''}"
+                          data-auth-tab="activate"
+                          aria-selected="${!isSignIn ? 'true' : 'false'}"
+                          aria-controls="panel-activate"
+                        >
+                          Aktivasi Akun
+                        </button>
+                      </div>
 
-                <form id="login-form" novalidate class="login-form lamp-form">
-                  <div class="lamp-field">
-                    <label class="form-label lamp-label" for="login-email">Email</label>
-                    <input
-                      id="login-email"
-                      name="email"
-                      type="email"
-                      class="form-control lamp-input"
-                      value="${escapeHtml(authUiState.prefillEmail)}"
-                      placeholder="ketua@tim.com"
-                      autocomplete="email"
-                      required
-                    />
-                  </div>
+                      ${isSignIn ? `
+                        <div id="panel-signin" class="laptop-panel-fade" role="tabpanel" aria-labelledby="tab-signin">
+                          ${authUiState.successBanner ? `
+                            <div id="login-success" class="login-success-alert lamp-alert-success" role="status">
+                              ✓ ${escapeHtml(authUiState.successBanner)}
+                            </div>
+                          ` : ''}
 
-                  <div class="lamp-field">
-                    <label class="form-label lamp-label" for="login-password">Kata Sandi</label>
-                    <div class="login-password-wrap">
-                      <input
-                        id="login-password"
-                        name="password"
-                        type="password"
-                        class="form-control lamp-input"
-                        placeholder="Masukkan kata sandi"
-                        autocomplete="current-password"
-                        required
-                      />
-                      <button
-                        type="button"
-                        id="toggle-password-vis"
-                        class="login-vis-btn lamp-vis-btn"
-                        aria-label="Tampilkan atau sembunyikan kata sandi"
-                        aria-pressed="false"
-                      >
-                        Lihat
-                      </button>
+                          <div id="login-error" class="login-error-alert lamp-alert-error" role="alert" style="display:none;"></div>
+
+                          <form id="login-form" novalidate class="login-form laptop-form">
+                            <div class="lamp-field">
+                              <label class="form-label lamp-label" for="login-email">Email</label>
+                              <input
+                                id="login-email"
+                                name="email"
+                                type="email"
+                                class="form-control lamp-input"
+                                value="${escapeHtml(authUiState.prefillEmail)}"
+                                placeholder="ketua@tim.com"
+                                autocomplete="email"
+                                required
+                              />
+                            </div>
+
+                            <div class="lamp-field">
+                              <label class="form-label lamp-label" for="login-password">Kata Sandi</label>
+                              <div class="login-password-wrap">
+                                <input
+                                  id="login-password"
+                                  name="password"
+                                  type="password"
+                                  class="form-control lamp-input"
+                                  placeholder="Masukkan kata sandi"
+                                  autocomplete="current-password"
+                                  required
+                                />
+                                <button
+                                  type="button"
+                                  id="toggle-password-vis"
+                                  class="login-vis-btn lamp-vis-btn"
+                                  aria-label="Tampilkan atau sembunyikan kata sandi"
+                                  aria-pressed="false"
+                                >
+                                  Lihat
+                                </button>
+                              </div>
+                            </div>
+
+                            <button type="submit" class="lamp-submit-btn login-submit-btn" id="btn-login-submit">
+                              Sign In ke StudioFlow →
+                            </button>
+                          </form>
+
+                          <!-- Quick Demo Login -->
+                          <div class="laptop-demo-box">
+                            <div class="laptop-demo-head">
+                              <strong>Quick Demo Login</strong>
+                              <button type="button" id="btn-login-reset-demo" class="lamp-reset-link">
+                                Reset dummy
+                              </button>
+                            </div>
+                            <div class="laptop-demo-grid">
+                              ${demoCredentialsGuide.map(acc => `
+                                <button
+                                  type="button"
+                                  class="laptop-demo-chip login-autofill-btn"
+                                  data-demo-email="${escapeHtml(acc.email)}"
+                                  data-demo-password="${escapeHtml(acc.password)}"
+                                  title="${escapeHtml(acc.email)} · ${escapeHtml(acc.password)}"
+                                >
+                                  <span>${escapeHtml(acc.role)}</span>
+                                </button>
+                              `).join('')}
+                            </div>
+                          </div>
+                        </div>
+                      ` : `
+                        <div id="panel-activate" class="laptop-panel-fade" role="tabpanel" aria-labelledby="tab-activate">
+                          <div id="activate-error" class="login-error-alert lamp-alert-error" role="alert" style="display:none;"></div>
+
+                          <form id="activate-form" novalidate class="login-form laptop-form">
+                            <div class="lamp-field">
+                              <label class="form-label lamp-label" for="act-email">Email Terdaftar</label>
+                              <input
+                                id="act-email"
+                                name="email"
+                                type="email"
+                                class="form-control lamp-input"
+                                placeholder="Email didaftarkan Ketua Tim"
+                                autocomplete="email"
+                                required
+                              />
+                            </div>
+
+                            <div class="lamp-field">
+                              <label class="form-label lamp-label" for="act-name">Nama Lengkap</label>
+                              <input
+                                id="act-name"
+                                name="name"
+                                type="text"
+                                class="form-control lamp-input"
+                                placeholder="Contoh: Ahmad Fauzi"
+                                autocomplete="name"
+                                required
+                              />
+                            </div>
+
+                            <div class="lamp-field">
+                              <label class="form-label lamp-label" for="act-password">Buat Kata Sandi Baru</label>
+                              <div class="login-password-wrap">
+                                <input
+                                  id="act-password"
+                                  name="new-password"
+                                  type="password"
+                                  class="form-control lamp-input"
+                                  placeholder="Minimal 6 karakter"
+                                  autocomplete="new-password"
+                                  required
+                                />
+                                <button
+                                  type="button"
+                                  id="toggle-act-password-vis"
+                                  class="login-vis-btn lamp-vis-btn"
+                                  aria-label="Tampilkan atau sembunyikan kata sandi baru"
+                                  aria-pressed="false"
+                                >
+                                  Lihat
+                                </button>
+                              </div>
+                            </div>
+
+                            <button type="submit" class="lamp-submit-btn login-submit-btn" id="btn-activate-submit">
+                              Aktivasi Akun →
+                            </button>
+                          </form>
+
+                          <p class="laptop-switch-hint">
+                            Sudah punya akun aktif?
+                            <button type="button" class="lamp-inline-link" data-auth-tab="signin">Kembali ke Sign In</button>
+                          </p>
+                        </div>
+                      `}
                     </div>
-                  </div>
 
-                  <button type="submit" class="lamp-submit-btn login-submit-btn" id="btn-login-submit">
-                    Sign In ke StudioFlow →
-                  </button>
-                </form>
+                    <!-- 50% RIGHT COLUMN: Warm Editorial Light Panel (#FAF8F5) -->
+                    <div class="laptop-col-editorial" data-editorial-mode="${isSignIn ? 'signin' : 'activate'}">
+                      <div class="editorial-accent-bar" aria-hidden="true"></div>
+                      <div class="editorial-content editorial-fade-slide">
+                        <span class="editorial-eyebrow">${editorialEyebrow}</span>
+                        <h1 class="editorial-heading">${editorialTitle}</h1>
+                        <p class="editorial-subtext">${editorialSub}</p>
 
-                <p class="login-helper-hint lamp-helper-hint">
-                  Baru didaftarkan Ketua Tim?
-                  <button type="button" class="login-inline-link lamp-inline-link" data-auth-tab="activate">
-                    Aktivasi akun di sini
-                  </button>
-                </p>
+                        <div class="editorial-divider" aria-hidden="true"></div>
 
-                <!-- Quick Demo Login Section -->
-                <div class="login-demo-box lamp-demo-box">
-                  <div class="login-demo-head lamp-demo-head">
-                    <strong>Quick Demo Login</strong>
-                    <span>Klik peran untuk isi otomatis</span>
-                  </div>
-
-                  <div class="lamp-demo-grid">
-                    ${demoCredentialsGuide.map(acc => `
-                      <button
-                        type="button"
-                        class="lamp-demo-chip login-autofill-btn"
-                        data-demo-email="${escapeHtml(acc.email)}"
-                        data-demo-password="${escapeHtml(acc.password)}"
-                        title="${escapeHtml(acc.email)} · ${escapeHtml(acc.password)}"
-                      >
-                        <span class="lamp-chip-role">${escapeHtml(acc.role)}</span>
-                        <span class="lamp-chip-email">${escapeHtml(acc.email)}</span>
-                      </button>
-                    `).join('')}
-                  </div>
-
-                  <div class="login-demo-footer lamp-demo-footer">
-                    <span class="login-disclaimer lamp-disclaimer">
-                      Simulasi lokal <code>localStorage</code> · Bukan auth server nyata
-                    </span>
-                    <button type="button" id="btn-login-reset-demo" class="login-reset-link lamp-reset-link">
-                      Reset dummy
-                    </button>
+                        ${isSignIn ? `
+                          <div class="editorial-footer-meta">
+                            <span class="editorial-meta-label">Alur Terpadu Tim Kreatif</span>
+                            <div class="editorial-role-tags">
+                              <span>Ketua Tim</span>
+                              <span>→</span>
+                              <span>Copywriter</span>
+                              <span>→</span>
+                              <span>Editor</span>
+                            </div>
+                          </div>
+                        ` : `
+                          <div class="editorial-footer-meta">
+                            <span class="editorial-meta-label">Akses Invite-Only</span>
+                            <p class="editorial-meta-note">
+                              Role tugas (<strong>Copywriter</strong> / <strong>Editor</strong>) otomatis terhubung dari undangan Ketua Tim.
+                            </p>
+                          </div>
+                        `}
+                      </div>
+                      <div class="editorial-footnote">
+                        Simulasi lokal <code>state/localStorage</code> · Yayasan Motivator Qur'an
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            ` : `
-              <div id="panel-activate" role="tabpanel" aria-labelledby="tab-activate">
-                <div id="activate-error" class="login-error-alert lamp-alert-error" role="alert" style="display:none;"></div>
+            </div>
 
-                <form id="activate-form" novalidate class="login-form lamp-form">
-                  <div class="lamp-field">
-                    <label class="form-label lamp-label" for="act-email">Email Terdaftar</label>
-                    <input
-                      id="act-email"
-                      name="email"
-                      type="email"
-                      class="form-control lamp-input"
-                      placeholder="Email yang didaftarkan Ketua Tim"
-                      autocomplete="email"
-                      required
-                    />
-                  </div>
-
-                  <div class="lamp-field">
-                    <label class="form-label lamp-label" for="act-name">Nama Lengkap</label>
-                    <input
-                      id="act-name"
-                      name="name"
-                      type="text"
-                      class="form-control lamp-input"
-                      placeholder="Contoh: Ahmad Fauzi"
-                      autocomplete="name"
-                      required
-                    />
-                  </div>
-
-                  <div class="lamp-field">
-                    <label class="form-label lamp-label" for="act-password">Buat Kata Sandi Baru</label>
-                    <div class="login-password-wrap">
-                      <input
-                        id="act-password"
-                        name="new-password"
-                        type="password"
-                        class="form-control lamp-input"
-                        placeholder="Minimal 6 karakter"
-                        autocomplete="new-password"
-                        required
-                      />
-                      <button
-                        type="button"
-                        id="toggle-act-password-vis"
-                        class="login-vis-btn lamp-vis-btn"
-                        aria-label="Tampilkan atau sembunyikan kata sandi baru"
-                        aria-pressed="false"
-                      >
-                        Lihat
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="auth-role-notice lamp-role-notice">
-                    <span>ℹ</span>
-                    <span>Role (<strong>Copywriter</strong> / <strong>Editor</strong>) otomatis mengikuti penugasan Ketua Tim.</span>
-                  </div>
-
-                  <button type="submit" class="lamp-submit-btn login-submit-btn" id="btn-activate-submit">
-                    Aktivasi Akun →
-                  </button>
-                </form>
-
-                <p class="login-helper-hint lamp-helper-hint">
-                  Sudah punya akun aktif?
-                  <button type="button" class="login-inline-link lamp-inline-link" data-auth-tab="signin">
-                    Kembali ke Sign In
-                  </button>
-                </p>
+            <!-- Metallic Silver / Space-Gray Laptop Base Deck & Keyboard -->
+            <div class="laptop-base-chassis" aria-hidden="true">
+              <div class="laptop-base-deck">
+                <div class="laptop-hinge-bar"></div>
+                <div class="laptop-keyboard-well">
+                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="laptop-trackpad"></div>
               </div>
-            `}
+              <div class="laptop-base-front">
+                <div class="laptop-thumb-notch"></div>
+              </div>
+              <div class="laptop-desk-shadow"></div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- Warm Wooden Desk Surface at Bottom -->
+      <div class="wooden-desk-surface" aria-hidden="true">
+        <div class="wooden-desk-light-pool"></div>
+        <div class="wooden-desk-edge"></div>
       </div>
     </div>
   `;
@@ -627,7 +644,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
   const shadeEl = document.querySelector('#lamp-shade-btn');
   const hintBtn = document.querySelector('#lamp-pull-hint-btn');
   const colorPillBtn = document.querySelector('#lamp-color-pill-btn');
-  const cardEl = document.querySelector('.lamp-login-card');
+  const lidEl = document.querySelector('.laptop-lid-pivot');
 
   const applyThemeToStage = () => {
     const theme = getCurrentTheme();
@@ -644,8 +661,19 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
   };
 
   let pullResetTimer = null;
+  let laptopOpenTimer = null;
+  let screenAwakeTimer = null;
+
+  const clearSequenceTimers = () => {
+    if (laptopOpenTimer) clearTimeout(laptopOpenTimer);
+    if (screenAwakeTimer) clearTimeout(screenAwakeTimer);
+    laptopOpenTimer = null;
+    screenAwakeTimer = null;
+  };
 
   const triggerPullAnimationAndToggle = (fromDrag = false) => {
+    clearSequenceTimers();
+
     authUiState.lampOn = !authUiState.lampOn;
     const isNowOn = authUiState.lampOn;
 
@@ -656,14 +684,14 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
       stageEl.classList.toggle('is-dark', !isNowOn);
       stageEl.setAttribute('data-lamp-on', String(isNowOn));
     }
-    if (cardEl) {
-      cardEl.setAttribute('aria-hidden', String(!isNowOn));
-    }
+
     if (cordEl) {
       cordEl.setAttribute('aria-pressed', String(isNowOn));
       cordEl.setAttribute(
         'aria-label',
-        isNowOn ? 'Tarik tali untuk mematikan lampu' : 'Tarik tali untuk menyalakan lampu'
+        isNowOn
+          ? 'Tarik tali untuk mematikan lampu dan menutup laptop'
+          : 'Tarik tali untuk menyalakan lampu dan membuka laptop'
       );
 
       if (!fromDrag) {
@@ -678,8 +706,21 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     }
 
     if (isNowOn) {
-      setTimeout(() => {
+      // Langkah 2: Setelah jeda 250ms sejak lampu menyala, buka tutup layar laptop secara 3D
+      laptopOpenTimer = setTimeout(() => {
         if (!authUiState.lampOn) return;
+        authUiState.laptopOpen = true;
+        stageEl?.classList.add('is-laptop-open');
+        stageEl?.setAttribute('data-laptop-open', 'true');
+      }, 250);
+
+      // Langkah 3: Nyalakan cahaya & isi layar laptop saat tutup mulai terbuka penuh
+      screenAwakeTimer = setTimeout(() => {
+        if (!authUiState.lampOn) return;
+        authUiState.screenAwake = true;
+        stageEl?.classList.add('is-screen-awake');
+        lidEl?.setAttribute('aria-hidden', 'false');
+
         const focusTarget =
           authUiState.activeTab === 'activate'
             ? document.querySelector('#act-email')
@@ -687,7 +728,15 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
               ? document.querySelector('#login-password')
               : document.querySelector('#login-email');
         focusTarget?.focus();
-      }, 240);
+      }, 620);
+    } else {
+      // Saat lampu dimatikan: layar meredup lalu tutup laptop menutup kembali
+      authUiState.screenAwake = false;
+      authUiState.laptopOpen = false;
+      stageEl?.classList.remove('is-screen-awake');
+      stageEl?.classList.remove('is-laptop-open');
+      stageEl?.setAttribute('data-laptop-open', 'false');
+      lidEl?.setAttribute('aria-hidden', 'true');
     }
   };
 
@@ -701,7 +750,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     playColorTickSound();
   };
 
-  // Interactive Pull Cord: supports BOTH direct click AND downward pointer drag!
+  // Interactive Pull Cord: supports BOTH direct click AND downward pointer drag
   if (cordEl) {
     let dragging = false;
     let startY = 0;
@@ -737,7 +786,6 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
       if (maxDelta >= 14) {
         triggerPullAnimationAndToggle(true);
       } else {
-        // Click tap without dragging
         triggerPullAnimationAndToggle(false);
       }
     };
@@ -758,12 +806,10 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     });
   }
 
-  // Clicking hint badge also pulls the cord
   hintBtn?.addEventListener('click', () => {
     triggerPullAnimationAndToggle(false);
   });
 
-  // Clicking lamp shade or color pill switches color when ON
   shadeEl?.addEventListener('click', cycleLampTheme);
   shadeEl?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -776,6 +822,8 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
   const switchTab = (nextTab, focusSelector = null) => {
     authUiState.activeTab = nextTab;
     authUiState.lampOn = true;
+    authUiState.laptopOpen = true;
+    authUiState.screenAwake = true;
     if (nextTab === 'activate') {
       authUiState.successBanner = '';
     }
@@ -799,7 +847,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     const errEl = document.querySelector('#login-error');
     const toggleBtn = document.querySelector('#toggle-password-vis');
 
-    if (authUiState.lampOn) {
+    if (authUiState.screenAwake) {
       if (authUiState.prefillEmail && passEl) {
         passEl.focus();
       } else {
@@ -829,6 +877,8 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
       const keepTheme = authUiState.themeIndex;
       resetAuthUiState();
       authUiState.lampOn = true;
+      authUiState.laptopOpen = true;
+      authUiState.screenAwake = true;
       authUiState.themeIndex = keepTheme;
       if (typeof rerenderLogin === 'function') {
         rerenderLogin('#login-email');
@@ -864,7 +914,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     const actErrEl = document.querySelector('#activate-error');
     const actToggleBtn = document.querySelector('#toggle-act-password-vis');
 
-    if (authUiState.lampOn) {
+    if (authUiState.screenAwake) {
       actEmailEl?.focus();
     }
 
@@ -902,6 +952,8 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
       if (actErrEl) actErrEl.style.display = 'none';
       authUiState.activeTab = 'signin';
       authUiState.lampOn = true;
+      authUiState.laptopOpen = true;
+      authUiState.screenAwake = true;
       authUiState.prefillEmail = res.user.email;
       authUiState.successBanner = `Aktivasi berhasil! Akun "${res.user.name}" aktif sebagai ${res.user.role}. Silakan Sign In.`;
       showToast(`Aktivasi sukses! ${res.user.name} aktif sebagai ${res.user.role}. Silakan masuk.`);
