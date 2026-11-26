@@ -33,8 +33,11 @@ let authUiState = {
   lampOn: false,
   laptopOpen: false,
   screenAwake: false,
+  screenFocused: false,
   themeIndex: 0,
 };
+
+let activeKeydownCleanup = null;
 
 let sharedAudioCtx = null;
 
@@ -158,6 +161,10 @@ function playColorTickSound() {
 }
 
 export function resetAuthUiState() {
+  if (typeof activeKeydownCleanup === 'function') {
+    activeKeydownCleanup();
+    activeKeydownCleanup = null;
+  }
   authUiState = {
     activeTab: 'signin',
     prefillEmail: '',
@@ -165,6 +172,7 @@ export function resetAuthUiState() {
     lampOn: false,
     laptopOpen: false,
     screenAwake: false,
+    screenFocused: false,
     themeIndex: 0,
   };
 }
@@ -182,18 +190,23 @@ export function renderLogin(tabOverride = null) {
   const isOn = authUiState.lampOn;
   const isOpen = authUiState.laptopOpen;
   const isAwake = authUiState.screenAwake;
+  const isFocused = authUiState.screenFocused;
 
   return `
     <div
       id="login-lamp-stage"
-      class="desk-login-stage ${isOn ? 'is-lit' : 'is-dark'} ${isOpen ? 'is-laptop-open' : ''} ${isAwake ? 'is-screen-awake' : ''}"
-      style="--lamp-color: ${theme.hex}; --lamp-rgb: ${theme.rgb}; --lamp-ink: ${theme.ink};"
+      class="desk-login-stage ${isOn ? 'is-lit' : 'is-dark'} ${isOpen ? 'is-laptop-open' : ''} ${isAwake ? 'is-screen-awake' : ''} ${isFocused ? 'is-screen-focused' : ''}"
+      style="--lamp-color: ${theme.hex}; --lamp-rgb: ${theme.rgb}; --lamp-ink: ${theme.ink}; --lamp-glow: rgba(${theme.rgb}, 0.36);"
       data-lamp-on="${isOn ? 'true' : 'false'}"
       data-laptop-open="${isOpen ? 'true' : 'false'}"
+      data-screen-focused="${isFocused ? 'true' : 'false'}"
       data-lamp-theme="${escapeHtml(theme.id)}"
     >
       <!-- Ambient Room Wash when Lamp is ON -->
       <div class="desk-room-glow" aria-hidden="true"></div>
+
+      <!-- Ambient Blur Backdrop behind Popped-Out Screen in Focus Mode (z-index: 40) -->
+      <div id="screen-focus-backdrop" class="screen-focus-backdrop" aria-hidden="true"></div>
 
       <!-- Main Scene sitting directly on top of the Wooden Desk -->
       <div class="desk-scene">
@@ -616,6 +629,9 @@ export function renderLogin(tabOverride = null) {
                     </div>
                   </div>
                 </div>
+                <div class="screen-focus-exit-hint" aria-hidden="true">
+                  Tekan <kbd>Enter</kbd> untuk kembali ke meja
+                </div>
               </div>
             </div>
 
@@ -648,12 +664,18 @@ export function renderLogin(tabOverride = null) {
 }
 
 export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
+  if (typeof activeKeydownCleanup === 'function') {
+    activeKeydownCleanup();
+    activeKeydownCleanup = null;
+  }
+
   const stageEl = document.querySelector('#login-lamp-stage');
   const cordEl = document.querySelector('#lamp-cord-btn');
   const shadeEl = document.querySelector('#lamp-shade-btn');
   const hintBtn = document.querySelector('#lamp-pull-hint-btn');
   const colorPillBtn = document.querySelector('#lamp-color-pill-btn');
   const lidEl = document.querySelector('.laptop-lid-pivot');
+  const focusBackdrop = document.querySelector('#screen-focus-backdrop');
   const slidingContainer = document.querySelector('#laptop-sliding-container');
   const signInPane = document.querySelector('#panel-signin');
   const activatePane = document.querySelector('#panel-activate');
@@ -664,12 +686,54 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     stageEl.style.setProperty('--lamp-color', theme.hex);
     stageEl.style.setProperty('--lamp-rgb', theme.rgb);
     stageEl.style.setProperty('--lamp-ink', theme.ink);
+    stageEl.style.setProperty('--lamp-glow', `rgba(${theme.rgb}, 0.36)`);
     stageEl.setAttribute('data-lamp-theme', theme.id);
 
     const nameEl = document.querySelector('#lamp-color-name');
     if (nameEl) nameEl.textContent = theme.name;
     shadeEl?.setAttribute('aria-label', `Klik kap lampu untuk mengganti warna cahaya (${theme.name})`);
     colorPillBtn?.setAttribute('aria-label', `Warna cahaya aktif: ${theme.name}. Klik untuk ganti warna.`);
+  };
+
+  const enterScreenFocusMode = () => {
+    if (!authUiState.screenAwake || !authUiState.laptopOpen || authUiState.screenFocused) return;
+    if (!stageEl || !lidEl) return;
+
+    try {
+      const rect = lidEl.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0 && typeof window !== 'undefined') {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const maxScaleW = (vw * 0.92) / rect.width;
+        const maxScaleH = (vh * 0.86) / rect.height;
+        const targetScale = Math.max(1, Math.min(1.22, maxScaleW, maxScaleH));
+        const tx = (vw / 2) - (rect.left + rect.width / 2);
+        const ty = (vh / 2) - (rect.top + rect.height / 2) - 8;
+
+        stageEl.style.setProperty('--focus-tx', `${tx.toFixed(1)}px`);
+        stageEl.style.setProperty('--focus-ty', `${ty.toFixed(1)}px`);
+        stageEl.style.setProperty('--focus-scale', targetScale.toFixed(3));
+      }
+    } catch {
+      stageEl.style.setProperty('--focus-tx', '0px');
+      stageEl.style.setProperty('--focus-ty', '-18px');
+      stageEl.style.setProperty('--focus-scale', '1.22');
+    }
+
+    authUiState.screenFocused = true;
+    stageEl.classList.add('is-screen-focused');
+    stageEl.setAttribute('data-screen-focused', 'true');
+  };
+
+  const exitScreenFocusMode = (blurActive = true) => {
+    if (!authUiState.screenFocused && !stageEl?.classList.contains('is-screen-focused')) return;
+    authUiState.screenFocused = false;
+    stageEl?.classList.remove('is-screen-focused');
+    stageEl?.setAttribute('data-screen-focused', 'false');
+
+    if (blurActive && typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   };
 
   let pullResetTimer = null;
@@ -694,7 +758,6 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     if (signInPane) signInPane.setAttribute('aria-hidden', String(toActivate));
     if (activatePane) activatePane.setAttribute('aria-hidden', String(!toActivate));
 
-    // Bersihkan error saat berpindah panel
     const loginErr = document.querySelector('#login-error');
     const actErr = document.querySelector('#activate-error');
     if (loginErr) loginErr.style.display = 'none';
@@ -706,7 +769,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
       if (succEl) succEl.style.display = 'none';
     }
 
-    if (focusSelector && authUiState.screenAwake) {
+    if (focusSelector && authUiState.screenAwake && authUiState.screenFocused) {
       setTimeout(() => {
         document.querySelector(focusSelector)?.focus();
       }, 420);
@@ -756,22 +819,15 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
         stageEl?.setAttribute('data-laptop-open', 'true');
       }, 250);
 
-      // Nyalakan layar laptop saat tutup terbuka
+      // Nyalakan layar laptop saat tutup terbuka (biarkan tampil utuh di meja dulu; focus mode aktif saat input diklik/diketik)
       screenAwakeTimer = setTimeout(() => {
         if (!authUiState.lampOn) return;
         authUiState.screenAwake = true;
         stageEl?.classList.add('is-screen-awake');
         lidEl?.setAttribute('aria-hidden', 'false');
-
-        const focusTarget =
-          authUiState.activeTab === 'activate'
-            ? document.querySelector('#act-name')
-            : authUiState.prefillEmail
-              ? document.querySelector('#login-password')
-              : document.querySelector('#login-email');
-        focusTarget?.focus();
       }, 620);
     } else {
+      exitScreenFocusMode(true);
       authUiState.screenAwake = false;
       authUiState.laptopOpen = false;
       stageEl?.classList.remove('is-screen-awake');
@@ -779,6 +835,99 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
       stageEl?.setAttribute('data-laptop-open', 'false');
       lidEl?.setAttribute('aria-hidden', 'true');
     }
+  };
+
+  // ── Screen Focus Mode Triggers (focusin / input / typing keydown) & Exit on Enter ──
+  slidingContainer?.addEventListener('focusin', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLElement && target.matches('input.slide-input')) {
+      enterScreenFocusMode();
+    }
+  });
+
+  slidingContainer?.addEventListener('input', (e) => {
+    const target = e.target;
+    if (target instanceof HTMLElement && target.matches('input.slide-input')) {
+      enterScreenFocusMode();
+    }
+  });
+
+  focusBackdrop?.addEventListener('click', () => {
+    exitScreenFocusMode(true);
+  });
+
+  const handleGlobalKeydown = (e) => {
+    // Pastikan masih berada di halaman login
+    if (!document.querySelector('#login-lamp-stage')) {
+      if (typeof activeKeydownCleanup === 'function') {
+        activeKeydownCleanup();
+        activeKeydownCleanup = null;
+      }
+      return;
+    }
+
+    if (!authUiState.screenAwake) return;
+
+    // Keluar dari Screen Focus Mode saat menekan Enter
+    if (e.key === 'Enter' && authUiState.screenFocused) {
+      const activeEl = document.activeElement;
+      const inLoginForm = Boolean(activeEl?.closest?.('#login-form'));
+      const inActivateForm = Boolean(activeEl?.closest?.('#activate-form'));
+
+      const loginReady = Boolean(
+        document.querySelector('#login-email')?.value?.trim() &&
+        document.querySelector('#login-password')?.value?.trim()
+      );
+      const activateReady = Boolean(
+        document.querySelector('#act-name')?.value?.trim() &&
+        document.querySelector('#act-email')?.value?.trim() &&
+        document.querySelector('#act-password')?.value?.trim()
+      );
+
+      // Langsung nonaktifkan mode fokus & hilangkan fokus input
+      exitScreenFocusMode(true);
+
+      if (inLoginForm && loginReady) {
+        e.preventDefault();
+        document.querySelector('#login-form')?.requestSubmit?.();
+        return;
+      }
+      if (inActivateForm && activateReady) {
+        e.preventDefault();
+        document.querySelector('#activate-form')?.requestSubmit?.();
+        return;
+      }
+
+      // Belum terisi lengkap -> cukup keluar dari mode fokus kembali ke meja
+      e.preventDefault();
+      return;
+    }
+
+    if (e.key === 'Escape' && authUiState.screenFocused) {
+      e.preventDefault();
+      exitScreenFocusMode(true);
+      return;
+    }
+
+    // Pemicu otomatis saat mulai mengetik karakter apa pun ketika laptop sudah terbuka
+    const isPrintableKey =
+      e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && e.key !== ' ';
+    if (isPrintableKey && !authUiState.screenFocused) {
+      const activeTag = document.activeElement?.tagName;
+      enterScreenFocusMode();
+      if (activeTag !== 'INPUT' && activeTag !== 'TEXTAREA') {
+        const firstInput =
+          authUiState.activeTab === 'activate'
+            ? document.querySelector('#act-name')
+            : document.querySelector('#login-email');
+        firstInput?.focus();
+      }
+    }
+  };
+
+  document.addEventListener('keydown', handleGlobalKeydown);
+  activeKeydownCleanup = () => {
+    document.removeEventListener('keydown', handleGlobalKeydown);
   };
 
   const cycleLampTheme = () => {

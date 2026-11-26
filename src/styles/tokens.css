@@ -105,8 +105,12 @@
   --transition-normal: 0.28s ease;
 
   /* ── Interactive Desk Lamp Login Defaults ── */
-  --lamp-color: #F5A623;
-  --lamp-rgb:   245, 166, 35;
-  --lamp-ink:   #1A1205;
-  --cord-pull:  0px;
+  --lamp-color:  #F5A623;
+  --lamp-rgb:    245, 166, 35;
+  --lamp-ink:    #1A1205;
+  --lamp-glow:   rgba(245, 166, 35, 0.36);
+  --cord-pull:   0px;
+  --focus-tx:    0px;
+  --focus-ty:    -18px;
+  --focus-scale: 1.22;
 }
