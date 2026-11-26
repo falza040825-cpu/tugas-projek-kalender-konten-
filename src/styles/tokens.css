@@ -97,4 +97,10 @@
   /* ── Transitions ── */
   --transition-fast:   0.15s ease;
   --transition-normal: 0.25s ease;
+
+  /* ── Interactive Desk Lamp Login Defaults ── */
+  --lamp-color: #F5A623;
+  --lamp-rgb:   245, 166, 35;
+  --lamp-ink:   #1A1205;
+  --cord-pull:  0px;
 }

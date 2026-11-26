@@ -48,6 +48,13 @@ let state = {
       return false;
     }
   })(),
+  ambientDeep: (function() {
+    try {
+      return localStorage.getItem('ymq_ambient_deep') === 'true';
+    } catch {
+      return false;
+    }
+  })(),
   globalSearchQuery: '',
 };
 
@@ -140,12 +147,15 @@ function renderApp() {
     contentHtml = renderPlaceholder(state.currentRoute);
   }
 
+  const baseUrl = (import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : './';
+  const studioBgUrl = `${baseUrl}studio-bg.jpg`;
+
   appContainer.innerHTML = `
-    <div class="app-shell">
+    <div class="app-shell ${state.ambientDeep ? 'ambient-deep' : ''}" style="background-image: url('${studioBgUrl}');">
       ${renderSidebar(state.currentRoute, state.sidebarCollapsed)}
-      <div id="sidebar-backdrop" style="display:none;position:fixed;inset:0;background:rgba(74,13,18,0.45);z-index:15;" aria-hidden="true"></div>
+      <div id="sidebar-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,14,13,0.6);backdrop-filter:blur(6px);z-index:15;" aria-hidden="true"></div>
       <main class="main-area">
-        ${renderTopbar(state.currentRoute, state.globalSearchQuery)}
+        ${renderTopbar(state.currentRoute, state.globalSearchQuery, state.ambientDeep)}
         <div class="page-content" id="page-content">
           ${contentHtml}
         </div>
@@ -363,6 +373,23 @@ function attachEventListeners() {
   // Logout Topbar & Sidebar
   document.querySelector('#btn-logout')?.addEventListener('click', handleLogout);
   document.querySelector('#btn-sidebar-logout')?.addEventListener('click', handleLogout);
+
+  // Spatial Ambient Mode Toggle (Topbar)
+  document.querySelector('#btn-ambient-toggle')?.addEventListener('click', () => {
+    state.ambientDeep = !state.ambientDeep;
+    try {
+      localStorage.setItem('ymq_ambient_deep', String(state.ambientDeep));
+    } catch {}
+    const shell = document.querySelector('.app-shell');
+    const btn = document.querySelector('#btn-ambient-toggle');
+    if (shell) shell.classList.toggle('ambient-deep', state.ambientDeep);
+    if (btn) {
+      btn.textContent = state.ambientDeep ? '☀' : '◐';
+      btn.setAttribute('aria-pressed', String(state.ambientDeep));
+      btn.title = state.ambientDeep ? 'Mode Kaca Hangat (Spatial Warm)' : 'Mode Fokus Gelap (Spatial Deep)';
+    }
+    showToast(state.ambientDeep ? 'Mode Spatial Deep aktif (fokus gelap).' : 'Mode Spatial Warm aktif (ruangan hangat).');
+  });
 
   // Mobile Nav Toggle
   const toggleBtn = document.querySelector('#mobile-toggle');
