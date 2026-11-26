@@ -38,6 +38,35 @@ let authUiState = {
 };
 
 let activeKeydownCleanup = null;
+let cinematicTimers = [];
+
+export function cleanupCinematicOverlay() {
+  cinematicTimers.forEach(id => clearTimeout(id));
+  cinematicTimers = [];
+  if (typeof document !== 'undefined') {
+    document.querySelector('#cinematic-logo-overlay')?.remove();
+  }
+}
+
+export function resetAuthUiState(keepOverlay = false) {
+  if (typeof activeKeydownCleanup === 'function') {
+    activeKeydownCleanup();
+    activeKeydownCleanup = null;
+  }
+  if (!keepOverlay) {
+    cleanupCinematicOverlay();
+  }
+  authUiState = {
+    activeTab: 'signin',
+    prefillEmail: '',
+    successBanner: '',
+    lampOn: false,
+    laptopOpen: false,
+    screenAwake: false,
+    screenFocused: false,
+    themeIndex: 0,
+  };
+}
 
 let sharedAudioCtx = null;
 
@@ -158,23 +187,6 @@ function playColorTickSound() {
   } catch {
     // Fallback senyap
   }
-}
-
-export function resetAuthUiState() {
-  if (typeof activeKeydownCleanup === 'function') {
-    activeKeydownCleanup();
-    activeKeydownCleanup = null;
-  }
-  authUiState = {
-    activeTab: 'signin',
-    prefillEmail: '',
-    successBanner: '',
-    lampOn: false,
-    laptopOpen: false,
-    screenAwake: false,
-    screenFocused: false,
-    themeIndex: 0,
-  };
 }
 
 function getCurrentTheme() {
@@ -627,6 +639,17 @@ export function renderLogin(tabOverride = null) {
                         </div>
                       </div>
                     </div>
+
+                    <!-- Stage 2: Brand Splash inside Small Laptop Screen (450ms - 1100ms) -->
+                    <div id="laptop-brand-splash" class="laptop-brand-splash" aria-hidden="true">
+                      <div class="laptop-splash-lockup">
+                        <div class="sf-logo-box splash-sf-box">SF</div>
+                        <div class="splash-sf-text">
+                          <strong>StudioFlow</strong>
+                          <small>TIM KREATIF YMQ</small>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div class="screen-focus-exit-hint" aria-hidden="true">
@@ -1054,8 +1077,126 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     showToast('Data tim, akun bawaan, & sesi lokal berhasil direset.');
   });
 
+  let isLoginTransitioning = false;
+
+  const runCinematicLoginTransition = (loggedUser) => {
+    if (isLoginTransitioning) return;
+    isLoginTransitioning = true;
+
+    // Bersihkan listener keyboard login selama transisi sinematik berlangsung
+    if (typeof activeKeydownCleanup === 'function') {
+      activeKeydownCleanup();
+      activeKeydownCleanup = null;
+    }
+
+    // ── TAHAP 1 (0ms – 450ms): Keluar dari Mode Fokus (layar kembali scale(1) di atas meja, blur hilang) ──
+    exitScreenFocusMode(true);
+
+    // ── TAHAP 2 (450ms – 1100ms): Logo SF StudioFlow muncul membesar halus di dalam layar laptop kecil ──
+    const t2 = setTimeout(() => {
+      stageEl?.classList.add('is-laptop-splash');
+    }, 450);
+
+    // ── TAHAP 3 (1100ms – 1700ms): Meja, bodi laptop & lampu memudar -> Layar penuh gelap polos #0F1114 dgn logo di tengah ──
+    const t3 = setTimeout(() => {
+      const splashLockup = document.querySelector('#laptop-brand-splash .laptop-splash-lockup');
+      let startTop = typeof window !== 'undefined' ? window.innerHeight / 2 : 360;
+      let startLeft = typeof window !== 'undefined' ? window.innerWidth / 2 : 640;
+
+      if (splashLockup) {
+        const r = splashLockup.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) {
+          startLeft = r.left + r.width / 2;
+          startTop = r.top + r.height / 2;
+        }
+      }
+
+      stageEl?.classList.add('is-room-fading');
+
+      // Buat overlay persisten di document.body (di luar #app agar tanpa kedipan saat renderApp() dipanggil!)
+      document.querySelector('#cinematic-logo-overlay')?.remove();
+      const overlay = document.createElement('div');
+      overlay.id = 'cinematic-logo-overlay';
+      overlay.className = 'cinematic-logo-overlay';
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.innerHTML = `
+        <div class="cinematic-backdrop"></div>
+        <div class="cinematic-floating-brand">
+          <div class="sf-logo-box cinematic-sf-box">SF</div>
+          <div class="cinematic-sf-text">
+            <strong>StudioFlow</strong>
+            <small>TIM KREATIF YMQ</small>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      const brandEl = overlay.querySelector('.cinematic-floating-brand');
+      if (brandEl) {
+        brandEl.style.left = `${startLeft.toFixed(1)}px`;
+        brandEl.style.top = `${startTop.toFixed(1)}px`;
+        brandEl.style.transform = 'translate(-50%, -50%) scale(1)';
+      }
+
+      // Force reflow agar transisi CSS menuju tengah layar berjalan mulus
+      void overlay.offsetWidth;
+
+      overlay.classList.add('phase-center');
+      if (brandEl) {
+        brandEl.style.left = '50%';
+        brandEl.style.top = '50%';
+        brandEl.style.transform = 'translate(-50%, -50%) scale(1.18)';
+      }
+    }, 1100);
+
+    // ── TAHAP 4 (1700ms – 2400ms): Logo meluncur ke pojok kiri atas header sidebar & Dashboard terbuka ──
+    const t4 = setTimeout(() => {
+      resetAuthUiState(true); // pertahankan #cinematic-logo-overlay sementara meluncur ke pojok kiri atas
+      onLoginSuccess(loggedUser, { cinematic: true });
+
+      const overlay = document.querySelector('#cinematic-logo-overlay');
+      const brandEl = overlay?.querySelector('.cinematic-floating-brand');
+
+      // Ukur posisi asli logo sidebar jika tersedia, atau default top: 28px; left: 28px
+      let dockLeft = 28;
+      let dockTop = 28;
+      const sidebarBrand = document.querySelector('#sidebar .brand');
+      if (sidebarBrand) {
+        const sr = sidebarBrand.getBoundingClientRect();
+        if (sr.width > 0 && sr.height > 0 && sr.left >= 0) {
+          dockLeft = Math.max(16, Math.round(sr.left));
+          dockTop = Math.max(16, Math.round(sr.top));
+        }
+      }
+
+      if (overlay && brandEl) {
+        overlay.classList.add('phase-dock');
+        brandEl.style.left = `${dockLeft}px`;
+        brandEl.style.top = `${dockTop}px`;
+        brandEl.style.transform = 'translate(0, 0) scale(0.96)';
+      }
+    }, 1700);
+
+    // Selesai (2400ms): hilangkan overlay mulus setelah logo menempel di pojok kiri atas
+    const t5 = setTimeout(() => {
+      const overlay = document.querySelector('#cinematic-logo-overlay');
+      if (overlay) {
+        overlay.classList.add('phase-done');
+      }
+      showToast(`Selamat datang, ${loggedUser.name} · Peran terdeteksi: ${loggedUser.role}`);
+    }, 2350);
+
+    const t6 = setTimeout(() => {
+      cleanupCinematicOverlay();
+    }, 2600);
+
+    cinematicTimers.push(t2, t3, t4, t5, t6);
+  };
+
   loginForm?.addEventListener('submit', (e) => {
     e.preventDefault();
+    if (isLoginTransitioning) return;
+
     const res = loginWithCredentials(emailEl?.value || '', passEl?.value || '');
     if (!res.ok) {
       if (errEl) {
@@ -1071,8 +1212,7 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
     }
 
     if (errEl) errEl.style.display = 'none';
-    resetAuthUiState();
-    onLoginSuccess(res.user);
+    runCinematicLoginTransition(res.user);
   });
 
   // ── Form 2: Aktivasi Akun (Invite-Only) Events ──

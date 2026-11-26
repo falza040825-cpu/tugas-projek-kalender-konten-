@@ -22,7 +22,7 @@ import {
   isEditorQueueItem,
 } from './data/mockData.js';
 import { escapeHtml } from './utils/helpers.js';
-import { renderLogin, attachLoginEvents, resetAuthUiState } from './components/login.js';
+import { renderLogin, attachLoginEvents, resetAuthUiState, cleanupCinematicOverlay } from './components/login.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderTopbar } from './components/topbar.js';
 import { renderDashboard, attachDashboardEvents } from './components/dashboard.js';
@@ -109,12 +109,16 @@ function renderApp() {
         document.querySelector(focusSelector)?.focus();
       }
     };
-    attachLoginEvents((loggedUser) => {
+    attachLoginEvents((loggedUser, opts = {}) => {
       state.currentRoute = 'Overview';
       state.globalSearchQuery = '';
       state.sidebarOpen = false;
+      state.cinematicDashboardEnter = Boolean(opts.cinematic);
       renderApp();
-      showToast(`Selamat datang, ${loggedUser.name} · Peran terdeteksi: ${loggedUser.role}`);
+      state.cinematicDashboardEnter = false;
+      if (!opts.cinematic) {
+        showToast(`Selamat datang, ${loggedUser.name} · Peran terdeteksi: ${loggedUser.role}`);
+      }
     }, showToast, rerenderLogin);
     return;
   }
@@ -151,7 +155,7 @@ function renderApp() {
   const studioBgUrl = `${baseUrl}studio-bg.jpg`;
 
   appContainer.innerHTML = `
-    <div class="app-shell ${state.ambientDeep ? 'ambient-deep' : ''}" style="background-image: url('${studioBgUrl}');">
+    <div class="app-shell ${state.ambientDeep ? 'ambient-deep' : ''} ${state.cinematicDashboardEnter ? 'dashboard-cinematic-enter' : ''}" style="background-image: url('${studioBgUrl}');">
       ${renderSidebar(state.currentRoute, state.sidebarCollapsed)}
       <div id="sidebar-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,14,13,0.6);backdrop-filter:blur(6px);z-index:55;" aria-hidden="true"></div>
       <main class="main-area" id="main-content">
@@ -289,11 +293,13 @@ function updateGlobalSearchDropdown(query) {
 }
 
 function handleLogout() {
+  cleanupCinematicOverlay();
   logoutCurrentUser();
   resetAuthUiState();
   state.currentRoute = 'Overview';
   state.globalSearchQuery = '';
   state.sidebarOpen = false;
+  state.cinematicDashboardEnter = false;
   renderApp();
   showToast('Anda keluar dari sesi simulasi. Silakan masuk kembali.');
 }

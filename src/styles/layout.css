@@ -1200,6 +1200,41 @@ button {
   animation: spatialZoomIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
+/* Stage 4 Cinematic Dashboard Reveal (Sidebar Slide-In + Topbar Fade) */
+@keyframes sidebarCinematicSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-34px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes topbarCinematicDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-shell.dashboard-cinematic-enter .sidebar {
+  animation: sidebarCinematicSlide 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.12s backwards;
+}
+
+.app-shell.dashboard-cinematic-enter .topbar {
+  animation: topbarCinematicDrop 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.18s backwards;
+}
+
+.app-shell.dashboard-cinematic-enter .page-content.spatial-enter {
+  animation-delay: 0.22s;
+}
+
 /* Responsive Styles */
 @media (max-width: 1200px) {
   .quick-switch-label {

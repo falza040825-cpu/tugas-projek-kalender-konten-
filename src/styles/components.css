@@ -5396,3 +5396,142 @@ select option {
 .page-content.spatial-enter .assets-grid > *:nth-child(6) { animation-delay: 265ms; }
 
 .page-content.spatial-enter .pip-board > *:nth-child(7) { animation-delay: 310ms; }
+
+/* ==========================================================================
+   CINEMATIC 4-STAGE LOGIN-TO-DASHBOARD LOGO MORPH TRANSITION
+   ========================================================================== */
+
+/* Stage 2 (450ms - 1100ms): Clean Dark Brand Splash inside Small Laptop Screen */
+.laptop-brand-splash {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 45%, #17191f 0%, #0F1114 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.laptop-splash-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transform: scale(0.85);
+  opacity: 0;
+  transition:
+    transform 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s ease;
+}
+
+.splash-sf-box,
+.cinematic-sf-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #F5B82E;
+  color: #18191C;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 6px 22px rgba(245, 184, 46, 0.42), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+.splash-sf-text strong,
+.cinematic-sf-text strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.4px;
+  line-height: 1.15;
+}
+
+.splash-sf-text small,
+.cinematic-sf-text small {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: rgba(255, 255, 255, 0.62);
+  margin-top: 2px;
+}
+
+.desk-login-stage.is-laptop-splash .laptop-brand-splash {
+  opacity: 1;
+}
+
+.desk-login-stage.is-laptop-splash .laptop-splash-lockup {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.desk-login-stage.is-laptop-splash .sliding-form-pane,
+.desk-login-stage.is-laptop-splash .sliding-overlay-wrap {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+/* Stage 3 (1100ms - 1700ms): Desk, Lamp & Laptop Chassis Fade Out smoothly */
+.desk-login-stage.is-room-fading .wooden-desk-surface,
+.desk-login-stage.is-room-fading .desk-lamp-slot,
+.desk-login-stage.is-room-fading .laptop-base-chassis,
+.desk-login-stage.is-room-fading .laptop-screen-aura,
+.desk-login-stage.is-room-fading .desk-room-glow,
+.desk-login-stage.is-room-fading .laptop-lid-front {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Persistent Full-Screen Minimalist Overlay on document.body (Zero White Flash!) */
+.cinematic-logo-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.24s ease;
+}
+
+.cinematic-backdrop {
+  position: absolute;
+  inset: 0;
+  background: #0F1114;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.cinematic-logo-overlay.phase-center .cinematic-backdrop {
+  opacity: 1;
+}
+
+/* Stage 4 (1700ms - 2400ms): Backdrop Fades Out to Reveal Dashboard while Logo Glides to Top-Left */
+.cinematic-logo-overlay.phase-dock .cinematic-backdrop {
+  opacity: 0;
+  transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cinematic-floating-brand {
+  position: fixed;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  z-index: 2;
+  will-change: left, top, transform, opacity;
+  transition: all 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cinematic-logo-overlay.phase-dock .cinematic-floating-brand {
+  transition: all 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cinematic-logo-overlay.phase-done {
+  opacity: 0;
+}
