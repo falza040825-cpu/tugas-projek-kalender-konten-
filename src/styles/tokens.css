@@ -1,66 +1,72 @@
-/* Design Tokens - Yayasan Motivator Qur'an | Tema: Merah · Gold · Putih */
+/* Design Tokens — Yayasan Motivator Qur'an | Global Dark Spatial Glassmorphism */
 
 :root {
-  /* ── Canvas & Surfaces ── */
-  --color-canvas: #FAF6F0;
-  --color-active-cutout: #FAF6F0;
-  --color-surface: #FFFFFF;
-  --color-surface-elevated: #FFFBF8;
-  --color-surface-subtle: #FDF4F2;
+  /* ── Spatial Glass Canvas & Surfaces ── */
+  --color-canvas:           #12100F;
+  --color-active-cutout:    #12100F;
+  --color-surface:          rgba(18, 16, 15, 0.78);
+  --color-surface-elevated: rgba(24, 21, 19, 0.85);
+  --color-surface-subtle:   rgba(255, 255, 255, 0.06);
 
-  /* ── Ink / Typography ── */
-  --color-ink: #2A1215;
-  --color-ink-secondary: #6B4A4D;
-  --color-ink-muted: #826063;
-  --color-border: #EAD8D5;
-  --color-border-subtle: #F4E9E7;
+  /* ── Dedicated Spatial Glass Tokens ── */
+  --glass-bg:       rgba(18, 16, 15, 0.78);
+  --glass-bg-dense: rgba(24, 21, 19, 0.85);
+  --glass-bg-hover: rgba(30, 27, 25, 0.86);
+  --glass-blur:     blur(28px) saturate(150%);
 
-  /* ── Primary Red (Crimson / Ruby) ── */
-  --color-red:        #B91C1C;
-  --color-red-dark:   #88131D;
-  --color-red-light:  #FEE2E2;
-  --color-red-mid:    #DC2626;
-  --color-red-bg:     #FEF2F2;
-  --color-red-ink:    #991B1B;
+  /* ── Ink / Typography (High Contrast on Dark Glass) ── */
+  --color-ink:           #F8FAFC;
+  --color-ink-secondary: rgba(255, 255, 255, 0.72);
+  --color-ink-muted:     rgba(255, 255, 255, 0.54);
+  --color-border:        rgba(255, 255, 255, 0.16);
+  --color-border-subtle: rgba(255, 255, 255, 0.09);
 
-  /* ── Gold / Amber ── */
-  --color-gold:       #C99312;
-  --color-gold-dark:  #926806;
-  --color-gold-light: #FEF3C7;
+  /* ── Primary Red / Coral Accent ── */
+  --color-red:        #F87171;
+  --color-red-dark:   #FCA5A5;
+  --color-red-light:  rgba(248, 113, 113, 0.22);
+  --color-red-mid:    #EF4444;
+  --color-red-bg:     rgba(239, 68, 68, 0.16);
+  --color-red-ink:    #FCA5A5;
+
+  /* ── Gold / Warm Amber Accent ── */
+  --color-gold:       #F59E0B;
+  --color-gold-dark:  #FBBF24;
+  --color-gold-light: rgba(245, 158, 11, 0.22);
   --color-gold-mid:   #F5B82E;
-  --color-gold-bg:    #FFFBEB;
-  --color-gold-ink:   #784F05;
+  --color-gold-bg:    rgba(245, 158, 11, 0.16);
+  --color-gold-ink:   #FDE68A;
 
-  /* ── Semantic Accent Tokens (Merah & Gold Palette) ── */
-  /* Sage → Gold hangat */
-  --color-sage:       #FDE68A;
-  --color-sage-bg:    #FFFBEB;
-  --color-sage-ink:   #784F05;
+  /* ── Semantic Accent Tokens (Luminous Dark Glass Palette) ── */
+  /* Sage → Emerald Glow (Selesai / Siap Tayang) */
+  --color-sage:       rgba(52, 211, 153, 0.42);
+  --color-sage-bg:    rgba(16, 185, 129, 0.16);
+  --color-sage-ink:   #6EE7B7;
 
-  /* Lavender → Merah lembut */
-  --color-lavender:   #FECACA;
-  --color-lavender-bg:#FEF2F2;
-  --color-lavender-ink:#991B1B;
+  /* Lavender → Violet Glow (Menunggu Review / TikTok) */
+  --color-lavender:    rgba(192, 132, 252, 0.38);
+  --color-lavender-bg: rgba(168, 85, 247, 0.16);
+  --color-lavender-ink:#E9D5FF;
 
-  /* Sand → Champagne Gold */
-  --color-sand:       #FCD34D;
-  --color-sand-bg:    #FEF7E0;
-  --color-sand-ink:   #6E4704;
+  /* Sand → Warm Amber Glow (Naskah / Prioritas / YouTube) */
+  --color-sand:       rgba(251, 191, 36, 0.42);
+  --color-sand-bg:    rgba(245, 158, 11, 0.16);
+  --color-sand-ink:   #FDE68A;
 
-  /* Blush → Merah urgensi / terlambat */
-  --color-blush:      #FCA5A5;
-  --color-blush-bg:   #FEE2E2;
-  --color-blush-ink:  #7F1D1D;
+  /* Blush → Coral Red Glow (Urgensi / Terlambat / Revisi) */
+  --color-blush:      rgba(251, 113, 133, 0.45);
+  --color-blush-bg:   rgba(244, 63, 94, 0.18);
+  --color-blush-ink:  #FDA4AF;
 
-  /* Taupe → Emas-perunggu lembut */
-  --color-taupe:      #E7D3B8;
-  --color-taupe-bg:   #FAF3E8;
-  --color-taupe-ink:  #6E4E2E;
+  /* Taupe → Warm Neutral Glass (Ide / Draft) */
+  --color-taupe:      rgba(255, 255, 255, 0.22);
+  --color-taupe-bg:   rgba(255, 255, 255, 0.08);
+  --color-taupe-ink:  #E2E8F0;
 
   /* ── Border Radius ── */
-  --radius-card:    20px;
-  --radius-panel:   18px;
-  --radius-control: 11px;
+  --radius-card:    22px;
+  --radius-panel:   22px;
+  --radius-control: 12px;
   --radius-badge:   8px;
   --radius-pill:    999px;
 
@@ -83,20 +89,20 @@
   --font-size-2xl: 28px;
 
   /* ── Shadows ── */
-  --shadow-sm:    0 2px 8px rgba(153, 27, 27, 0.06);
-  --shadow-md:    0 8px 24px rgba(153, 27, 27, 0.10);
-  --shadow-lg:    0 16px 40px rgba(153, 27, 27, 0.14);
-  --shadow-modal: 0 20px 60px rgba(74, 13, 18, 0.22);
+  --shadow-sm:    0 4px 14px rgba(0, 0, 0, 0.28);
+  --shadow-md:    0 12px 30px rgba(0, 0, 0, 0.36);
+  --shadow-lg:    0 18px 44px rgba(0, 0, 0, 0.44);
+  --shadow-modal: 0 28px 72px rgba(0, 0, 0, 0.65);
 
   /* ── Gradients ── */
-  --grad-red:      linear-gradient(135deg, #991B1B 0%, #DC2626 100%);
-  --grad-gold:     linear-gradient(135deg, #C99312 0%, #F5B82E 100%);
-  --grad-hero:     linear-gradient(135deg, #4A0D12 0%, #991B1B 60%, #C99312 100%);
-  --grad-sidebar:  linear-gradient(180deg, #4A0D12 0%, #6D141C 65%, #7F1D1D 100%);
+  --grad-red:      linear-gradient(135deg, #B91C1C 0%, #EF4444 100%);
+  --grad-gold:     linear-gradient(135deg, #D97706 0%, #FBBF24 100%);
+  --grad-hero:     linear-gradient(135deg, #2A1215 0%, #7F1D1D 60%, #D97706 100%);
+  --grad-sidebar:  linear-gradient(180deg, rgba(18, 16, 15, 0.82) 0%, rgba(24, 21, 19, 0.88) 100%);
 
   /* ── Transitions ── */
-  --transition-fast:   0.15s ease;
-  --transition-normal: 0.25s ease;
+  --transition-fast:   0.18s ease;
+  --transition-normal: 0.28s ease;
 
   /* ── Interactive Desk Lamp Login Defaults ── */
   --lamp-color: #F5A623;

@@ -116,15 +116,18 @@
   transform: translateY(-1px);
 }
 
-/* Cards & Panels (Luminous Frosted Surfaces for Subpages on Spatial Backdrop) */
+/* Cards & Panels (Global Dark Spatial Glassmorphism) */
 .panel {
-  background-color: rgba(255, 252, 248, 0.90);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.52);
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-panel);
   padding: 20px 22px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  color: var(--color-ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 14px 36px rgba(0, 0, 0, 0.34);
 }
 
 .panel-head {
@@ -3964,15 +3967,15 @@ button.role-badge-pill:hover {
 
 /* Base VisionOS Dark Frosted Glass Card + Hover Lift & Edge Glow */
 .v7-glass-card {
-  background: rgba(24, 22, 20, 0.54);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-border);
   border-radius: 22px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 12px 30px rgba(0, 0, 0, 0.25);
-  color: #F9FAFB;
+    0 14px 34px rgba(0, 0, 0, 0.34);
+  color: var(--color-ink);
   transition:
     transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.25s ease,
@@ -3982,11 +3985,11 @@ button.role-badge-pill:hover {
 
 .v7-glass-card:hover {
   transform: translateY(-4px);
-  background: rgba(32, 30, 28, 0.62);
+  background: var(--glass-bg-hover);
   border-color: rgba(255, 255, 255, 0.28);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    0 20px 44px rgba(0, 0, 0, 0.35);
+    0 22px 46px rgba(0, 0, 0, 0.42);
 }
 
 /* 1. 4-Column Glass Stat Cards */
@@ -4611,3 +4614,345 @@ button.role-badge-pill:hover {
     justify-content: flex-end;
   }
 }
+
+/* ==========================================================================
+   GLOBAL DARK SPATIAL GLASSMORPHISM OVERRIDE (ALL PAGES & MODULES)
+   ========================================================================== */
+
+/* High-contrast secondary text across dashboard & subpages */
+.v7-stat-label,
+.v7-panel-head p,
+.v7-chart-kpi span,
+.v7-chart-tags,
+.v7-priority-meta,
+.v7-donut-center span,
+.v7-legend-name,
+.v7-row-body span,
+.v7-demo-info p {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Global Dark Frosted Glass Surfaces (0.78 opacity + blur 28px) */
+.panel,
+.stat-card,
+.pip-stat-card,
+.pip-col,
+.pip-column,
+.asset-card,
+.asset-link-card,
+.notif-card,
+.rep-card,
+.rep-kpi-card,
+.demo-banner,
+.cal-toolbar,
+.docs-nav-card,
+.docs-content-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 14px 36px rgba(0, 0, 0, 0.34);
+  color: var(--color-ink);
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.28s ease;
+}
+
+.stat-card:hover,
+.pip-stat-card:hover,
+.asset-card:hover,
+.asset-link-card:hover,
+.notif-card:hover,
+.rep-kpi-card:hover {
+  transform: translateY(-3px);
+  background: var(--glass-bg-hover);
+  border-color: rgba(255, 255, 255, 0.26);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 20px 42px rgba(0, 0, 0, 0.42);
+}
+
+/* Dense Dark Glass for Data Tables, Calendar Cells, Kanban Cards & Detail Boxes (0.85 opacity) */
+.cal-cell,
+.pip-card,
+.task-table,
+.user-table,
+.data-table,
+.rep-table,
+.detail-kv-grid,
+.wf-link-box,
+.wf-brief-box {
+  background: var(--glass-bg-dense);
+  border-color: var(--color-border);
+  color: var(--color-ink);
+}
+
+.cal-cell {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 12px;
+}
+
+.cal-cell:hover:not(.empty) {
+  background: rgba(34, 30, 27, 0.90);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.cal-cell.empty {
+  background: rgba(14, 12, 11, 0.48);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.cal-cell.today {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.35);
+}
+
+.cal-cell.today .cal-date-num {
+  color: #FDE68A;
+  font-weight: 800;
+}
+
+.pip-card {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+
+.pip-card:hover {
+  background: rgba(34, 30, 27, 0.92);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+}
+
+/* Tables & Row Dividers */
+.table-head,
+.user-table thead,
+.user-table th,
+.data-table thead,
+.data-table th,
+.rep-table thead,
+.rep-table th {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.task-row,
+.user-table td,
+.data-table td,
+.rep-table td,
+.cal-list-row,
+.notif-item,
+.schedule-item,
+.activity-item {
+  border-bottom-color: rgba(255, 255, 255, 0.09);
+  color: var(--color-ink);
+}
+
+.task-row:hover,
+.user-table tbody tr:hover,
+.data-table tbody tr:hover,
+.cal-list-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Inputs, Selects, Textareas & Search Bars (Dark Glass) */
+.form-control,
+.filter-select,
+.cal-search,
+.task-search,
+.asset-search,
+select.form-control,
+textarea.form-control {
+  background: rgba(12, 11, 10, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #F8FAFC;
+  color-scheme: dark;
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.form-control::placeholder,
+.cal-search::placeholder,
+.task-search::placeholder,
+.asset-search::placeholder {
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.form-control:focus,
+.filter-select:focus,
+.cal-search:focus,
+.task-search:focus,
+.asset-search:focus {
+  outline: none;
+  border-color: #F59E0B;
+  background: rgba(16, 14, 13, 0.92);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+}
+
+select option {
+  background-color: #181614;
+  color: #F8FAFC;
+}
+
+/* Glass Capsule Buttons & Filter Tabs across All Pages */
+.btn-secondary,
+.cal-nav-btn,
+.cal-view-btn,
+.filter-pill,
+.filter-chip,
+.doc-tab-btn,
+.btn-danger-outline {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover,
+.cal-nav-btn:hover,
+.cal-view-btn:hover,
+.filter-pill:hover,
+.filter-chip:hover,
+.doc-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.30);
+  color: #FFFFFF;
+}
+
+.cal-view-btn.active,
+.filter-pill.active,
+.filter-chip.active,
+.doc-tab-btn.active {
+  background: rgba(255, 255, 255, 0.92);
+  color: #181614;
+  border-color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.btn-primary {
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  color: #181410;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #FBBF24 0%, #FDE68A 100%);
+  color: #12100E;
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-danger-outline {
+  color: #FDA4AF;
+  border-color: rgba(251, 113, 133, 0.38);
+  background: rgba(244, 63, 94, 0.12);
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: rgba(244, 63, 94, 0.28);
+  border-color: rgba(251, 113, 133, 0.65);
+  color: #FFFFFF;
+}
+
+.btn-gold,
+.st-published,
+.cal-event.st-published {
+  color: #181410;
+}
+
+/* Modals & Toast in Dark Spatial Glass */
+.modal-backdrop {
+  background: rgba(8, 7, 6, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-card {
+  background: rgba(20, 18, 17, 0.94);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  color: #F8FAFC;
+  animation: spatialZoomIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.toast-notification {
+  background: rgba(20, 18, 17, 0.92);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #F8FAFC;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.48);
+}
+
+/* Universal Staggered Zoom/Fade-In for Cards on ALL Pages */
+@keyframes spatialCardZoom {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.page-content.spatial-enter .panel,
+.page-content.spatial-enter .stat-card,
+.page-content.spatial-enter .pip-stat-card,
+.page-content.spatial-enter .pip-col,
+.page-content.spatial-enter .pip-column,
+.page-content.spatial-enter .asset-card,
+.page-content.spatial-enter .asset-link-card,
+.page-content.spatial-enter .notif-card,
+.page-content.spatial-enter .rep-card,
+.page-content.spatial-enter .rep-kpi-card,
+.page-content.spatial-enter .demo-banner {
+  animation: spatialCardZoom 0.44s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.page-content.spatial-enter .stats-grid > *:nth-child(1),
+.page-content.spatial-enter .pip-stats > *:nth-child(1),
+.page-content.spatial-enter .asset-links-grid > *:nth-child(1),
+.page-content.spatial-enter .assets-grid > *:nth-child(1),
+.page-content.spatial-enter .pip-board > *:nth-child(1) { animation-delay: 40ms; }
+
+.page-content.spatial-enter .stats-grid > *:nth-child(2),
+.page-content.spatial-enter .pip-stats > *:nth-child(2),
+.page-content.spatial-enter .asset-links-grid > *:nth-child(2),
+.page-content.spatial-enter .assets-grid > *:nth-child(2),
+.page-content.spatial-enter .pip-board > *:nth-child(2) { animation-delay: 85ms; }
+
+.page-content.spatial-enter .stats-grid > *:nth-child(3),
+.page-content.spatial-enter .pip-stats > *:nth-child(3),
+.page-content.spatial-enter .asset-links-grid > *:nth-child(3),
+.page-content.spatial-enter .assets-grid > *:nth-child(3),
+.page-content.spatial-enter .pip-board > *:nth-child(3) { animation-delay: 130ms; }
+
+.page-content.spatial-enter .stats-grid > *:nth-child(4),
+.page-content.spatial-enter .pip-stats > *:nth-child(4),
+.page-content.spatial-enter .asset-links-grid > *:nth-child(4),
+.page-content.spatial-enter .assets-grid > *:nth-child(4),
+.page-content.spatial-enter .pip-board > *:nth-child(4) { animation-delay: 175ms; }
+
+.page-content.spatial-enter .pip-board > *:nth-child(5),
+.page-content.spatial-enter .asset-links-grid > *:nth-child(5),
+.page-content.spatial-enter .assets-grid > *:nth-child(5) { animation-delay: 220ms; }
+
+.page-content.spatial-enter .pip-board > *:nth-child(6),
+.page-content.spatial-enter .asset-links-grid > *:nth-child(6),
+.page-content.spatial-enter .assets-grid > *:nth-child(6) { animation-delay: 265ms; }
+
+.page-content.spatial-enter .pip-board > *:nth-child(7) { animation-delay: 310ms; }
