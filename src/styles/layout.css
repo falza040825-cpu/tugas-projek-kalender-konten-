@@ -46,27 +46,27 @@ button {
 .sidebar {
   position: sticky;
   top: 12px;
+  align-self: flex-start;
   height: calc(100vh - 24px);
-  margin: 12px;
+  margin: 12px 0 12px 12px;
   width: 260px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   border-radius: 28px;
+  /* padding kanan nol — nav-item aktif perlu menyentuh tepi kanan sidebar */
   padding: 16px 0 14px 12px;
   z-index: 25;
   background: rgba(68, 22, 26, 0.72);
   backdrop-filter: blur(22px) saturate(160%);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.22);
+  border-right: none;
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.25),
-    0 12px 32px rgba(0, 0, 0, 0.18);
+    -8px 12px 28px -10px rgba(0, 0, 0, 0.16);
   transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1), padding 0.35s cubic-bezier(0.22, 1, 0.36, 1), margin 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-  /* overflow: visible agar pseudo-element ::before/::after pada .nav-item.active
-     tidak terpotong. border-radius masih merender sudut melengkung pada background
-     elemen sidebar itu sendiri meski overflow bukan hidden. */
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* Glass Ambient Glow Reflection */
@@ -90,7 +90,9 @@ button {
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 12px;
+  /* padding kanan sejajar dengan elemen lain di sidebar */
   padding: 0 12px 0 2px;
+  flex-shrink: 0;
   position: relative;
   z-index: 1;
 }
@@ -174,7 +176,9 @@ button {
 /* In-Sidebar Search */
 .sidebar-search-wrap {
   margin-bottom: 12px;
+  /* padding kanan agar search pill tidak menyentuh tepi sidebar */
   padding-right: 12px;
+  flex-shrink: 0;
   position: relative;
   z-index: 1;
 }
@@ -235,6 +239,7 @@ button {
 /* Scroll Area */
 .sidebar-scroll-area {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 0;
@@ -285,6 +290,7 @@ button {
   gap: 12px;
   height: 44px;
   padding: 0 12px;
+  /* margin kanan 12px untuk item NON-aktif: memberi jarak dari tepi sidebar */
   margin-right: 12px;
   border-radius: 14px;
   text-align: left;
@@ -319,24 +325,24 @@ button {
   transform: scale(0.94);
 }
 
-/* Seamless Cutout / Inverted Tab in Expanded Mode */
+/* ── SEAMLESS TAB AKTIF (Expanded) ─────────────────────────────────────────
+   Tab aktif menempel rata ke tepi kanan sidebar dengan warna canvas (#FAF6F0).
+   Tidak ada pseudo-element, tidak ada shadow, tidak ada garis — bersih 100%.
+   border-radius: 14px 0 0 14px  →  kiri bulat, kanan rata ke tepi sidebar.
+   margin-right: 0 / width: 100% →  menyatu penuh dengan tepi kanan sidebar.
+   border kanan sidebar akan "tertimpa" oleh warna canvas tab aktif.
+   ─────────────────────────────────────────────────────────────────────────── */
 .sidebar:not(.collapsed) .nav-item.active {
   background-color: var(--color-canvas);
   color: var(--color-ink);
   font-weight: 700;
-  /* radius kiri bulat 14px, kanan sepenuhnya rata — tidak ada garis pemisah */
   border-radius: 14px 0 0 14px;
-  /* -1px menutup 1px border sidebar kanan agar tidak ada garis pembatas */
-  margin-right: -1px;
-  padding-right: 13px;
-  width: calc(100% + 1px);
+  margin-right: 0;
+  width: 100%;
+  padding-right: 12px;
   border: none;
   outline: none;
-  /* Dua inset shadow: satu di sudut kanan atas, satu di kanan bawah,
-     untuk menciptakan ilusi lekukan cekung tanpa perlu keluar dari sidebar */
-  box-shadow:
-    inset -14px 14px 0 0 rgba(68, 22, 26, 0.72),
-    inset -14px -14px 0 0 rgba(68, 22, 26, 0.72);
+  box-shadow: none;
   position: relative;
   z-index: 6;
 }
@@ -355,50 +361,8 @@ button {
   color: #FFFFFF;
 }
 
-/*
-  Lekukan cekung (inverted border-radius ~14px) di sudut kanan atas & kanan bawah.
-  Teknik: pseudo-element dengan radial-gradient di dalam batas tab aktif,
-  menggambar warna sidebar di sudut sehingga terlihat seperti cekungan mulus.
-  Pseudo-element berada DALAM batas .nav-item.active sehingga tidak terpotong
-  oleh overflow: hidden pada parent mana pun.
-*/
-
-/* Top-Right Inverted Scoop (~14px) */
-.sidebar:not(.collapsed) .nav-item.active::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 14px;
-  height: 14px;
-  /* Warna canvas di area lingkaran (area cekungan), warna sidebar di sudut */
-  background: radial-gradient(
-    circle at 100% 0%,
-    var(--color-canvas) 0%,
-    var(--color-canvas) 14px,
-    rgba(68, 22, 26, 0.72) 14px
-  );
-  pointer-events: none;
-  z-index: 7;
-}
-
-/* Bottom-Right Inverted Scoop (~14px) */
-.sidebar:not(.collapsed) .nav-item.active::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 14px;
-  height: 14px;
-  background: radial-gradient(
-    circle at 100% 100%,
-    var(--color-canvas) 0%,
-    var(--color-canvas) 14px,
-    rgba(68, 22, 26, 0.72) 14px
-  );
-  pointer-events: none;
-  z-index: 7;
-}
+/* Tidak ada ::before / ::after — dihapus sepenuhnya agar tidak muncul
+   segitiga atau artefak visual di sudut kanan tab aktif. */
 
 .nav-icon-wrap {
   width: 22px;
@@ -527,6 +491,8 @@ button {
 .sidebar-bottom {
   margin-top: auto;
   padding-top: 10px;
+  padding-right: 12px;
+  flex-shrink: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   position: relative;
   z-index: 1;
@@ -620,8 +586,13 @@ button {
 
 .sidebar.collapsed {
   width: 68px;
+  margin: 12px;
   padding: 16px 8px 14px;
   border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.25),
+    0 12px 32px rgba(0, 0, 0, 0.18);
   align-items: center;
   overflow: visible;
 }
@@ -1115,7 +1086,7 @@ button {
 @media (max-width: 1024px) {
   .sidebar:not(.collapsed) {
     width: 240px;
-    padding: 16px 12px;
+    padding: 16px 0 14px 12px;
   }
   .page-content {
     padding: 24px 20px;
@@ -1137,13 +1108,18 @@ button {
     height: auto;
     width: min(300px, calc(100vw - 24px));
     margin: 0;
+    padding: 16px 14px 14px;
     border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
     transform: translateX(calc(-100% - 24px));
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
     z-index: 50;
   }
   .sidebar.open {
     transform: translateX(0);
+  }
+  .sidebar .nav-item {
+    margin-right: 0;
   }
   .sidebar .nav-item.active {
     border-radius: 14px;
