@@ -153,7 +153,7 @@ function renderApp() {
   appContainer.innerHTML = `
     <div class="app-shell ${state.ambientDeep ? 'ambient-deep' : ''}" style="background-image: url('${studioBgUrl}');">
       ${renderSidebar(state.currentRoute, state.sidebarCollapsed)}
-      <div id="sidebar-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,14,13,0.6);backdrop-filter:blur(6px);z-index:15;" aria-hidden="true"></div>
+      <div id="sidebar-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,14,13,0.6);backdrop-filter:blur(6px);z-index:55;" aria-hidden="true"></div>
       <main class="main-area" id="main-content">
         ${renderTopbar(state.currentRoute, state.globalSearchQuery, state.ambientDeep)}
         <div class="page-content spatial-enter" id="page-content" data-route-view="${escapeHtml(state.currentRoute)}">
