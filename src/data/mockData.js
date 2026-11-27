@@ -60,6 +60,7 @@ export const ROLE_PERMISSIONS = {
       'Manajemen tugas',
       'Aset & file',
       'Notifikasi',
+      'Diskusi Tim',
       'Laporan',
       'Manajemen Tim',
       'Dokumen SOT',
@@ -80,6 +81,7 @@ export const ROLE_PERMISSIONS = {
       'Manajemen tugas',
       'Aset & file',
       'Notifikasi',
+      'Diskusi Tim',
       'Dokumen SOT',
     ],
     canCreateContent: false,
@@ -98,6 +100,7 @@ export const ROLE_PERMISSIONS = {
       'Manajemen tugas',
       'Aset & file',
       'Notifikasi',
+      'Diskusi Tim',
       'Dokumen SOT',
     ],
     canCreateContent: false,
@@ -695,6 +698,234 @@ export function syncDerivedArrays() {
 
 const STORAGE_SESSION_KEY = 'ymq_rbac_session_v1';
 const STORAGE_DATA_KEY    = 'ymq_rbac_workspace_v3';
+const STORAGE_CHAT_KEY    = 'ymq_team_chat_v1';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Diskusi Tim & Channel Chat Internal (Simulasi localStorage)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const chatChannels = [
+  {
+    id: 'umum-tim',
+    name: '#umum-tim',
+    title: 'Koordinasi Harian Tim',
+    description: 'Sinkronisasi jadwal tayang, prioritas mingguan, dan pengumuman operasional tim kreatif.',
+  },
+  {
+    id: 'ide-konten',
+    name: '#ide-konten',
+    title: 'Brainstorming & Naskah',
+    description: 'Diskusi ide hook, sudut pandang dakwah, riset tren TikTok/IG/YouTube, dan copywriting.',
+  },
+  {
+    id: 'revisi-editing',
+    name: '#revisi-editing',
+    title: 'Produksi & Revisi Editing',
+    description: 'Catatan potongan video, audio, teks layar, dan konfirmasi hasil final sebelum approval.',
+  },
+];
+
+const INITIAL_CHAT_MESSAGES = [
+  {
+    id: 'msg-01',
+    channelId: 'umum-tim',
+    senderId: 'u-01',
+    senderName: 'Helza',
+    senderEmail: 'ketua@tim.com',
+    senderInitials: 'HZ',
+    senderRole: ROLES.KETUA_TIM,
+    senderAvatarClass: 'av-sand',
+    text: 'Assalamu\'alaikum tim! Reminder target minggu ini: konten "Update kurikulum 2027" dan "Weekend class teaser" kita kunci sebelum Jumat jam 16.00 ya.',
+    timestamp: '09:05',
+    readByEmails: ['ketua@tim.com', 'copywriter@tim.com', 'editor@tim.com'],
+  },
+  {
+    id: 'msg-02',
+    channelId: 'umum-tim',
+    senderId: 'u-02',
+    senderName: 'Nadia Putri',
+    senderEmail: 'copywriter@tim.com',
+    senderInitials: 'NP',
+    senderRole: ROLES.COPYWRITER,
+    senderAvatarClass: 'av-sage',
+    text: 'Wa\'alaikumussalam Kak Helza! Siap, draft 6 slide carousel Kurikulum 2027 sedang saya finalisasi caption-nya. Siang ini langsung saya pindahkan ke status Siap Edit.',
+    timestamp: '09:12',
+    readByEmails: ['copywriter@tim.com', 'ketua@tim.com'],
+  },
+  {
+    id: 'msg-03',
+    channelId: 'umum-tim',
+    senderId: 'u-03',
+    senderName: 'Raka Pratama',
+    senderEmail: 'editor@tim.com',
+    senderInitials: 'RP',
+    senderRole: ROLES.EDITOR,
+    senderAvatarClass: 'av-lav',
+    text: 'Siap mantap! Raw footage Weekend Class juga sudah saya rapikan di folder Drive. Begitu naskah Nadia masuk antrean Siap Edit, langsung saya gas potong.',
+    timestamp: '09:18',
+    readByEmails: ['editor@tim.com'],
+  },
+  {
+    id: 'msg-04',
+    channelId: 'ide-konten',
+    senderId: 'u-02',
+    senderName: 'Nadia Putri',
+    senderEmail: 'copywriter@tim.com',
+    senderInitials: 'NP',
+    senderRole: ROLES.COPYWRITER,
+    senderAvatarClass: 'av-sage',
+    text: 'Untuk "Flash sale kelas tahsin batch baru" di TikTok, gimana kalau 3 detik pertama pakai hook pertanyaan: "Sering ragu panjang-pendek mad pas baca Al-Qur\'an?"',
+    timestamp: '10:02',
+    readByEmails: ['copywriter@tim.com', 'ketua@tim.com'],
+  },
+  {
+    id: 'msg-05',
+    channelId: 'ide-konten',
+    senderId: 'u-01',
+    senderName: 'Helza',
+    senderEmail: 'ketua@tim.com',
+    senderInitials: 'HZ',
+    senderRole: ROLES.KETUA_TIM,
+    senderAvatarClass: 'av-sand',
+    text: 'Hook-nya sangat relevan dan hangat! Tambahkan 1 kutipan testimoni singkat alumni batch 12 di pertengahan biar kepercayaan calon santri makin kuat.',
+    timestamp: '10:09',
+    readByEmails: ['ketua@tim.com'],
+  },
+  {
+    id: 'msg-06',
+    channelId: 'ide-konten',
+    senderId: 'u-03',
+    senderName: 'Raka Pratama',
+    senderEmail: 'editor@tim.com',
+    senderInitials: 'RP',
+    senderRole: ROLES.EDITOR,
+    senderAvatarClass: 'av-lav',
+    text: 'Setuju banget! Nanti di bagian hook saya kasih kinetic typography warna gold + BGM akustik biar feel-nya clean dan modern.',
+    timestamp: '10:15',
+    readByEmails: ['editor@tim.com'],
+  },
+  {
+    id: 'msg-07',
+    channelId: 'revisi-editing',
+    senderId: 'u-03',
+    senderName: 'Raka Pratama',
+    senderEmail: 'editor@tim.com',
+    senderInitials: 'RP',
+    senderRole: ROLES.EDITOR,
+    senderAvatarClass: 'av-lav',
+    text: 'Halo Kak Helza & Nadia, cut pertama "Weekend class teaser bersama santri" sudah saya tempel tautan preview-nya. Boleh dicek pacing transisi detik 0:15–0:25 ya.',
+    timestamp: '10:34',
+    readByEmails: ['editor@tim.com', 'ketua@tim.com'],
+  },
+  {
+    id: 'msg-08',
+    channelId: 'revisi-editing',
+    senderId: 'u-01',
+    senderName: 'Helza',
+    senderEmail: 'ketua@tim.com',
+    senderInitials: 'HZ',
+    senderRole: ROLES.KETUA_TIM,
+    senderAvatarClass: 'av-sand',
+    text: 'Sudah saya tonton Raka, visualnya keren! Minta tolong naikkan volume vokal narator +3dB di detik 0:18 dan perjelas subtitle CTA di akhir ya.',
+    timestamp: '10:41',
+    readByEmails: ['ketua@tim.com'],
+  },
+  {
+    id: 'msg-09',
+    channelId: 'revisi-editing',
+    senderId: 'u-02',
+    senderName: 'Nadia Putri',
+    senderEmail: 'copywriter@tim.com',
+    senderInitials: 'NP',
+    senderRole: ROLES.COPYWRITER,
+    senderAvatarClass: 'av-sage',
+    text: 'Untuk teks CTA penutupnya bisa pakai: "Daftar kelas weekend sekarang — link di bio!" biar ringkas dan langsung terbaca.',
+    timestamp: '10:47',
+    readByEmails: ['copywriter@tim.com'],
+  },
+];
+
+export let chatMessages = deepClone(INITIAL_CHAT_MESSAGES);
+
+function formatNowClock() {
+  try {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  } catch {
+    return 'Baru saja';
+  }
+}
+
+export function saveChatState() {
+  const storage = getSafeStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(STORAGE_CHAT_KEY, JSON.stringify({
+      v: 1,
+      messages: chatMessages,
+    }));
+  } catch {
+    // Abaikan kuota penuh pada mode demo
+  }
+}
+
+export function getChatMessagesByChannel(channelId) {
+  return chatMessages.filter(m => m.channelId === channelId);
+}
+
+export function getUnreadChatCount(userEmail = null, channelId = null) {
+  const email = String(userEmail || currentUser?.email || '').trim().toLowerCase();
+  if (!email) return 0;
+  return chatMessages.filter(m => {
+    if (channelId && m.channelId !== channelId) return false;
+    const readers = Array.isArray(m.readByEmails) ? m.readByEmails : [];
+    return !readers.includes(email);
+  }).length;
+}
+
+export function markChannelAsRead(channelId, userEmail = null) {
+  const email = String(userEmail || currentUser?.email || '').trim().toLowerCase();
+  if (!email || !channelId) return false;
+  let changed = false;
+  chatMessages.forEach(m => {
+    if (m.channelId !== channelId) return;
+    if (!Array.isArray(m.readByEmails)) m.readByEmails = [];
+    if (!m.readByEmails.includes(email)) {
+      m.readByEmails.push(email);
+      changed = true;
+    }
+  });
+  if (changed) saveChatState();
+  return changed;
+}
+
+export function sendChatMessage({ channelId, text }) {
+  const user = getCurrentUser();
+  const cleanText = String(text || '').trim();
+  const validChannel = chatChannels.some(c => c.id === channelId) ? channelId : chatChannels[0].id;
+  if (!user || !cleanText) return null;
+
+  const email = String(user.email || '').trim().toLowerCase();
+  const newMsg = {
+    id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    channelId: validChannel,
+    senderId: user.id || 'u-active',
+    senderName: user.name || 'Anggota Tim',
+    senderEmail: email,
+    senderInitials: user.avatar || initialsFromName(user.name),
+    senderRole: user.role || ROLES.COPYWRITER,
+    senderAvatarClass: user.avatarClass || 'av-sand',
+    text: cleanText,
+    timestamp: formatNowClock(),
+    readByEmails: [email],
+  };
+
+  chatMessages.push(newMsg);
+  saveChatState();
+  return newMsg;
+}
 
 function getSafeStorage() {
   try {
@@ -779,6 +1010,14 @@ export function hydrateFromStorage() {
           if (Array.isArray(parsed.recentActivities)) {
             replaceArrayInPlace(recentActivities, parsed.recentActivities);
           }
+        }
+      }
+
+      const rawChat = storage.getItem(STORAGE_CHAT_KEY);
+      if (rawChat) {
+        const parsedChat = JSON.parse(rawChat);
+        if (parsedChat && parsedChat.v === 1 && Array.isArray(parsedChat.messages) && parsedChat.messages.length > 0) {
+          replaceArrayInPlace(chatMessages, parsedChat.messages);
         }
       }
 
@@ -872,8 +1111,10 @@ export function resetDemoWorkspace(keepSession = true) {
   replaceArrayInPlace(contentItems, deepClone(INITIAL_CONTENT_ITEMS));
   replaceArrayInPlace(recentActivities, deepClone(INITIAL_ACTIVITIES));
   replaceArrayInPlace(notificationsData, deepClone(INITIAL_NOTIFICATIONS));
+  replaceArrayInPlace(chatMessages, deepClone(INITIAL_CHAT_MESSAGES));
   syncDerivedArrays();
   saveWorkspaceState();
+  saveChatState();
 
   if (activeEmail) {
     const matched = usersData.find(u => u.email.toLowerCase() === activeEmail.toLowerCase());
@@ -1356,6 +1597,7 @@ export const navigationItems = [
   { id: 'Manajemen tugas', label: 'Manajemen tugas', icon: '☷', category: 'main', phase: 2 },
   { id: 'Aset & file',     label: 'Aset & file',     icon: '▧', category: 'main', phase: 3 },
   { id: 'Notifikasi',      label: 'Notifikasi',      icon: '♧', category: 'main', badge: '4', phase: 3 },
+  { id: 'Diskusi Tim',     label: 'Diskusi Tim',     icon: '💬', category: 'main', phase: 5 },
   { id: 'Laporan',         label: 'Laporan',         icon: '▥', category: 'main', phase: 3 },
   { id: 'Manajemen Tim',   label: 'Manajemen Tim',   icon: '♙', category: 'main', phase: 5 },
   { id: 'Dokumen SOT',     label: 'Dokumen SOT',     icon: '✳', category: 'sot',  phase: 1 },

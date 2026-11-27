@@ -35,6 +35,13 @@ import { renderUsers, attachUsersEvents } from './components/users.js';
 import { renderAssets, attachAssetsEvents } from './components/assets.js';
 import { renderNotifications, attachNotificationsEvents } from './components/notifications.js';
 import { renderReports, attachReportsEvents } from './components/reports.js';
+import {
+  renderChatPage,
+  attachChatPageEvents,
+  renderFloatingChatWidget,
+  attachFloatingChatEvents,
+  resetChatUiState,
+} from './components/chat.js';
 import { openNewContentModal } from './components/contentModal.js';
 
 let state = {
@@ -145,6 +152,8 @@ function renderApp() {
     contentHtml = renderAssets();
   } else if (state.currentRoute === 'Notifikasi') {
     contentHtml = renderNotifications();
+  } else if (state.currentRoute === 'Diskusi Tim') {
+    contentHtml = renderChatPage();
   } else if (state.currentRoute === 'Laporan') {
     contentHtml = renderReports();
   } else {
@@ -164,6 +173,7 @@ function renderApp() {
           ${contentHtml}
         </div>
       </main>
+      ${renderFloatingChatWidget(state.currentRoute)}
     </div>
     <div id="toast" class="toast-notification" role="status" aria-live="polite"></div>
     <div id="modal-container"></div>
@@ -192,9 +202,13 @@ function renderApp() {
     attachAssetsEvents(renderApp, showToast);
   } else if (state.currentRoute === 'Notifikasi') {
     attachNotificationsEvents(renderApp, showToast);
+  } else if (state.currentRoute === 'Diskusi Tim') {
+    attachChatPageEvents(renderApp, showToast);
   } else if (state.currentRoute === 'Laporan') {
     attachReportsEvents(renderApp, showToast);
   }
+
+  attachFloatingChatEvents(navigateTo, showToast);
 }
 
 function isItemVisibleForRole(item, role) {
@@ -296,6 +310,7 @@ function handleLogout() {
   cleanupCinematicOverlay();
   logoutCurrentUser();
   resetAuthUiState();
+  resetChatUiState();
   state.currentRoute = 'Overview';
   state.globalSearchQuery = '';
   state.sidebarOpen = false;

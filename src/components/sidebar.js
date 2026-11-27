@@ -6,6 +6,7 @@ import {
   canAccessRoute,
   isCopywriterQueueItem,
   isEditorQueueItem,
+  getUnreadChatCount,
   ROLES,
 } from '../data/mockData.js';
 import { escapeHtml } from '../utils/helpers.js';
@@ -25,6 +26,7 @@ export function renderSidebar(currentRoute, isCollapsed = false) {
   const userAvatar = user?.avatar || 'SF';
 
   const unreadCount = notificationsData.filter(n => !n.read).length;
+  const unreadChatCount = getUnreadChatCount(user?.email);
 
   let pendingTasksCount = 0;
   if (role === ROLES.COPYWRITER) {
@@ -91,6 +93,8 @@ export function renderSidebar(currentRoute, isCollapsed = false) {
             let badge = item.badge;
             if (item.id === 'Notifikasi') {
               badge = unreadCount > 0 ? String(unreadCount) : null;
+            } else if (item.id === 'Diskusi Tim') {
+              badge = unreadChatCount > 0 ? String(unreadChatCount) : null;
             } else if (item.id === 'Manajemen tugas' && pendingTasksCount > 0) {
               badge = String(pendingTasksCount);
             }
