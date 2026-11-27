@@ -109,8 +109,10 @@
   --lamp-rgb:    245, 166, 35;
   --lamp-ink:    #1A1205;
   --lamp-glow:   rgba(245, 166, 35, 0.36);
-  --cord-pull:   0px;
-  --focus-tx:    0px;
-  --focus-ty:    -18px;
-  --focus-scale: 1.22;
+  --cord-pull:    0px;
+  --focus-tx:     0px;
+  --focus-ty:     -18px;
+  --focus-width:  880px;
+  --focus-height: 500px;
+  --focus-scale:  1;
 }

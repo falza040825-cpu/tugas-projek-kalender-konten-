@@ -222,38 +222,38 @@ export function renderLogin(tabOverride = null) {
 
       <!-- Main Scene sitting directly on top of the Wooden Desk -->
       <div class="desk-scene">
-        <!-- LEFT: Architect Dual-Arm Desk Lamp -->
+        <!-- LEFT: Tall Architect Dual-Arm Desk Lamp (Overhead Front Lighting) -->
         <div class="desk-lamp-slot">
           <div class="lamp-assembly">
-            <!-- Diagonal Volumetric Spotlight Cone aimed at the Laptop -->
+            <!-- Diagonal Volumetric Overhead Spotlight Cone aimed at Front Screen, Keyboard & Desk -->
             <div class="lamp-spotlight-cone" aria-hidden="true"></div>
             <div class="lamp-spotlight-core" aria-hidden="true"></div>
 
             <svg
               class="desk-lamp-svg"
-              viewBox="0 0 340 430"
+              viewBox="0 0 340 620"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               aria-label="Lampu meja arsitek interaktif"
             >
               <defs>
                 <linearGradient id="lampMetalDark" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#424754" />
-                  <stop offset="50%" stop-color="#252932" />
+                  <stop offset="0%" stop-color="#484E5D" />
+                  <stop offset="50%" stop-color="#272B35" />
                   <stop offset="100%" stop-color="#14161B" />
                 </linearGradient>
                 <linearGradient id="lampMetalRod" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#52596B" />
-                  <stop offset="50%" stop-color="#2D323E" />
-                  <stop offset="100%" stop-color="#191C23" />
+                  <stop offset="0%" stop-color="#5A6275" />
+                  <stop offset="50%" stop-color="#2F3542" />
+                  <stop offset="100%" stop-color="#1A1D24" />
                 </linearGradient>
                 <linearGradient id="lampShadeBody" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#444A59" />
-                  <stop offset="45%" stop-color="#272B35" />
+                  <stop offset="0%" stop-color="#4A5161" />
+                  <stop offset="45%" stop-color="#292E38" />
                   <stop offset="100%" stop-color="#14161B" />
                 </linearGradient>
                 <linearGradient id="lampBaseTop" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#3C414E" />
+                  <stop offset="0%" stop-color="#424856" />
                   <stop offset="100%" stop-color="#17191F" />
                 </linearGradient>
                 <radialGradient id="bulbGlowGrad" cx="50%" cy="50%" r="50%">
@@ -262,39 +262,39 @@ export function renderLogin(tabOverride = null) {
                   <stop offset="100%" stop-color="var(--lamp-color)" stop-opacity="0" />
                 </radialGradient>
                 <filter id="bulbBlur" x="-60%" y="-60%" width="220%" height="220%">
-                  <feGaussianBlur stdDeviation="10" />
+                  <feGaussianBlur stdDeviation="11" />
                 </filter>
               </defs>
 
               <!-- Grounded Contact Shadow on Wooden Desk -->
-              <ellipse cx="112" cy="402" rx="88" ry="11" fill="rgba(0,0,0,0.68)" />
+              <ellipse cx="106" cy="596" rx="88" ry="11" fill="rgba(0,0,0,0.72)" />
 
               <!-- Weighted Metallic Base -->
               <path
-                d="M46 392 C46 381 68 375 112 375 C156 375 178 381 178 392 L180 398 C180 403 150 406 112 406 C74 406 44 403 44 398 Z"
+                d="M40 584 C40 573 62 567 106 567 C150 567 172 573 172 584 L174 592 C174 597 144 600 106 600 C68 600 38 597 38 592 Z"
                 fill="url(#lampBaseTop)"
-                stroke="rgba(255,255,255,0.14)"
+                stroke="rgba(255,255,255,0.16)"
                 stroke-width="1"
               />
               <!-- Base Collar Stem -->
-              <rect x="99" y="354" width="26" height="24" rx="6" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-              <circle cx="112" cy="362" r="5" fill="#111318" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" />
+              <rect x="93" y="544" width="26" height="26" rx="6" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.16)" stroke-width="1" />
+              <circle cx="106" cy="554" r="5" fill="#111318" stroke="rgba(255,255,255,0.24)" stroke-width="1.2" />
 
-              <!-- Lower Articulated Dual Arm -->
-              <line x1="106" y1="360" x2="58" y2="226" stroke="url(#lampMetalRod)" stroke-width="7" stroke-linecap="round" />
-              <line x1="118" y1="356" x2="70" y2="222" stroke="url(#lampMetalRod)" stroke-width="4.5" stroke-linecap="round" />
-              <line x1="95" y1="326" x2="71" y2="260" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-dasharray="3 3" />
+              <!-- Lower Articulated Dual Arm (Tall Architect Reach) -->
+              <line x1="100" y1="550" x2="40" y2="338" stroke="url(#lampMetalRod)" stroke-width="7.5" stroke-linecap="round" />
+              <line x1="112" y1="546" x2="52" y2="334" stroke="url(#lampMetalRod)" stroke-width="4.5" stroke-linecap="round" />
+              <line x1="88" y1="504" x2="57" y2="394" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-dasharray="3 3" />
 
-              <!-- Upper Articulated Dual Arm -->
-              <line x1="62" y1="222" x2="180" y2="112" stroke="url(#lampMetalRod)" stroke-width="7" stroke-linecap="round" />
-              <line x1="70" y1="230" x2="188" y2="120" stroke="url(#lampMetalRod)" stroke-width="4.5" stroke-linecap="round" />
-              <line x1="100" y1="194" x2="146" y2="150" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-dasharray="3 3" />
+              <!-- Upper Articulated Dual Arm (Reaching Above Open Laptop Top) -->
+              <line x1="44" y1="334" x2="188" y2="66" stroke="url(#lampMetalRod)" stroke-width="7.5" stroke-linecap="round" />
+              <line x1="53" y1="342" x2="197" y2="74" stroke="url(#lampMetalRod)" stroke-width="4.5" stroke-linecap="round" />
+              <line x1="88" y1="276" x2="152" y2="154" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-dasharray="3 3" />
 
               <!-- Elbow Joint -->
-              <circle cx="64" cy="225" r="13" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.18)" stroke-width="1.4" />
-              <circle cx="64" cy="225" r="5" fill="#14161B" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" />
+              <circle cx="46" cy="338" r="13.5" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.2)" stroke-width="1.4" />
+              <circle cx="46" cy="338" r="5.2" fill="#14161B" stroke="rgba(255,255,255,0.3)" stroke-width="1.2" />
 
-              <!-- Interactive Pull Cord (Click & Drag) -->
+              <!-- Interactive Pull Cord (Click & Drag, hanging comfortably beside the laptop) -->
               <g
                 id="lamp-cord-btn"
                 class="lamp-cord-group"
@@ -303,28 +303,28 @@ export function renderLogin(tabOverride = null) {
                 aria-pressed="${isOn ? 'true' : 'false'}"
                 aria-label="${isOn ? 'Tarik tali untuk mematikan lampu dan menutup laptop' : 'Tarik tali untuk menyalakan lampu dan membuka laptop'}"
               >
-                <rect x="196" y="158" width="52" height="162" fill="transparent" />
+                <rect x="196" y="114" width="54" height="270" fill="transparent" />
                 <line
                   class="lamp-cord-line"
                   x1="222"
-                  y1="158"
+                  y1="118"
                   x2="222"
-                  y2="290"
+                  y2="348"
                   stroke="#A1A8B6"
                   stroke-width="2.2"
                   stroke-linecap="round"
                 />
-                <circle cx="222" cy="286" r="3" fill="#E2E8F0" />
-                <circle class="lamp-cord-bead-halo" cx="222" cy="298" r="15" />
-                <circle class="lamp-cord-bead" cx="222" cy="298" r="9.5" />
-                <circle cx="219" cy="294.5" r="2.6" fill="rgba(255,255,255,0.7)" />
+                <circle cx="222" cy="343" r="3" fill="#E2E8F0" />
+                <circle class="lamp-cord-bead-halo" cx="222" cy="356" r="16" />
+                <circle class="lamp-cord-bead" cx="222" cy="356" r="10" />
+                <circle cx="218.5" cy="352" r="2.8" fill="rgba(255,255,255,0.72)" />
               </g>
 
               <!-- Head Swivel Joint -->
-              <circle cx="184" cy="116" r="11" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.22)" stroke-width="1.3" />
-              <circle cx="184" cy="116" r="4.2" fill="#121419" />
+              <circle cx="192" cy="70" r="11.5" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.24)" stroke-width="1.3" />
+              <circle cx="192" cy="70" r="4.5" fill="#121419" />
 
-              <!-- Lamp Shade (Clickable when ON to cycle color) -->
+              <!-- Overhead Lamp Shade Angled Down-Right onto Front of Laptop & Desk -->
               <g
                 id="lamp-shade-btn"
                 class="lamp-shade-group"
@@ -332,28 +332,28 @@ export function renderLogin(tabOverride = null) {
                 tabindex="0"
                 aria-label="Klik kap lampu untuk mengganti warna cahaya (${escapeHtml(theme.name)})"
               >
-                <circle class="lamp-bulb-halo" cx="242" cy="174" r="34" fill="url(#bulbGlowGrad)" filter="url(#bulbBlur)" />
-                <g transform="rotate(34 188 118)">
-                  <rect x="176" y="102" width="30" height="32" rx="10" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.16)" stroke-width="1.2" />
-                  <line x1="185" y1="110" x2="194" y2="110" stroke="rgba(255,255,255,0.22)" stroke-width="1.6" stroke-linecap="round" />
-                  <line x1="185" y1="117" x2="194" y2="117" stroke="rgba(255,255,255,0.22)" stroke-width="1.6" stroke-linecap="round" />
+                <circle class="lamp-bulb-halo" cx="262" cy="130" r="38" fill="url(#bulbGlowGrad)" filter="url(#bulbBlur)" />
+                <g transform="rotate(42 196 70)">
+                  <rect x="184" y="54" width="30" height="32" rx="10" fill="url(#lampMetalDark)" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" />
+                  <line x1="193" y1="62" x2="202" y2="62" stroke="rgba(255,255,255,0.24)" stroke-width="1.6" stroke-linecap="round" />
+                  <line x1="193" y1="69" x2="202" y2="69" stroke="rgba(255,255,255,0.24)" stroke-width="1.6" stroke-linecap="round" />
 
                   <path
-                    d="M202 100 C228 96 266 74 280 70 L280 166 C266 162 228 140 202 136 Z"
+                    d="M210 52 C236 48 274 26 288 22 L288 118 C274 114 236 92 210 88 Z"
                     fill="url(#lampShadeBody)"
-                    stroke="rgba(255,255,255,0.2)"
+                    stroke="rgba(255,255,255,0.22)"
                     stroke-width="1.3"
                   />
                   <path
-                    d="M210 104 C232 99 258 85 272 79"
-                    stroke="rgba(255,255,255,0.26)"
+                    d="M218 56 C240 51 266 37 280 31"
+                    stroke="rgba(255,255,255,0.28)"
                     stroke-width="2"
                     stroke-linecap="round"
                   />
-                  <ellipse class="lamp-shade-mouth" cx="280" cy="118" rx="14" ry="48" />
-                  <ellipse class="lamp-bulb-glass" cx="270" cy="118" rx="15" ry="17" />
-                  <circle class="lamp-bulb-core" cx="272" cy="118" r="7" />
-                  <ellipse class="lamp-shade-rim" cx="280" cy="118" rx="14" ry="48" fill="none" stroke-width="2" />
+                  <ellipse class="lamp-shade-mouth" cx="288" cy="70" rx="14" ry="48" />
+                  <ellipse class="lamp-bulb-glass" cx="278" cy="70" rx="15" ry="17" />
+                  <circle class="lamp-bulb-core" cx="280" cy="70" r="7" />
+                  <ellipse class="lamp-shade-rim" cx="288" cy="70" rx="14" ry="48" fill="none" stroke-width="2" />
                 </g>
               </g>
             </svg>
@@ -658,18 +658,54 @@ export function renderLogin(tabOverride = null) {
               </div>
             </div>
 
-            <!-- Metallic Silver / Space-Gray Laptop Base Deck & Keyboard -->
+            <!-- Realistic MacBook Air/Pro Aluminum Chassis (Closed Top Lid + Open Keyboard Deck) -->
             <div class="laptop-base-chassis" aria-hidden="true">
+              <!-- Dark Aluminum Closed Lid Shell (Visible when Closed, smoothly lifts away when Open) -->
+              <div class="laptop-closed-lid-cap">
+                <div class="laptop-closed-lid-top">
+                  <span class="laptop-closed-lid-mark">SF</span>
+                </div>
+                <div class="laptop-closed-lid-edge">
+                  <span class="laptop-closed-lid-notch"></span>
+                </div>
+              </div>
+
+              <!-- Open Laptop Clutch Hinge + Forward-Tilted Keyboard Deck -->
+              <div class="laptop-hinge-cylinder"></div>
               <div class="laptop-base-deck">
-                <div class="laptop-hinge-bar"></div>
-                <div class="laptop-keyboard-well">
-                  <span></span><span></span><span></span><span></span><span></span><span></span>
-                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                <div class="laptop-deck-overhead-sheen"></div>
+                <div class="laptop-deck-inner">
+                  <div class="laptop-speaker-grille"></div>
+                  <div class="laptop-keyboard-well">
+                    <div class="laptop-kb-row kb-row-fn">
+                      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="laptop-kb-row kb-row-main">
+                      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="laptop-kb-row kb-row-main">
+                      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="laptop-kb-row kb-row-bottom">
+                      <span></span><span></span><span></span><span class="kb-spacebar"></span><span></span><span></span><span></span>
+                    </div>
+                  </div>
+                  <div class="laptop-speaker-grille"></div>
                 </div>
                 <div class="laptop-trackpad"></div>
               </div>
+
+              <!-- Machined Silver Lower Chassis Front Lip (15px Realistic Thickness) -->
               <div class="laptop-base-front">
+                <div class="laptop-side-port port-left"></div>
                 <div class="laptop-thumb-notch"></div>
+                <div class="laptop-side-port port-right"></div>
+              </div>
+
+              <!-- Thin Rubber Feet sitting flush on Wooden Desk -->
+              <div class="laptop-rubber-feet">
+                <span></span>
+                <span></span>
               </div>
               <div class="laptop-desk-shadow"></div>
             </div>
@@ -724,23 +760,31 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
 
     try {
       const rect = lidEl.getBoundingClientRect();
+      const screenRect = slidingContainer?.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0 && typeof window !== 'undefined') {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
-        const maxScaleW = (vw * 0.92) / rect.width;
-        const maxScaleH = (vh * 0.86) / rect.height;
-        const targetScale = Math.max(1, Math.min(1.22, maxScaleW, maxScaleH));
-        const tx = (vw / 2) - (rect.left + rect.width / 2);
-        const ty = (vh / 2) - (rect.top + rect.height / 2) - 8;
+        const bezelExtraH = screenRect ? Math.max(24, rect.height - screenRect.height) : 30;
+        const targetW = Math.round(Math.min(880, vw * 0.92));
+        const targetScreenH = Math.round(Math.min(500, Math.max(410, vh * 0.80 - bezelExtraH)));
+        const targetLidH = targetScreenH + bezelExtraH;
 
-        stageEl.style.setProperty('--focus-tx', `${tx.toFixed(1)}px`);
-        stageEl.style.setProperty('--focus-ty', `${ty.toFixed(1)}px`);
-        stageEl.style.setProperty('--focus-scale', targetScale.toFixed(3));
+        const currentCenterX = rect.left + rect.width / 2;
+        const expandedCenterY = rect.bottom - targetLidH / 2;
+
+        const tx = Math.round((vw / 2) - currentCenterX);
+        const ty = Math.round((vh / 2 - 6) - expandedCenterY);
+
+        stageEl.style.setProperty('--focus-width', `${targetW}px`);
+        stageEl.style.setProperty('--focus-height', `${targetScreenH}px`);
+        stageEl.style.setProperty('--focus-tx', `${tx}px`);
+        stageEl.style.setProperty('--focus-ty', `${ty}px`);
       }
     } catch {
+      stageEl.style.setProperty('--focus-width', '880px');
+      stageEl.style.setProperty('--focus-height', '500px');
       stageEl.style.setProperty('--focus-tx', '0px');
       stageEl.style.setProperty('--focus-ty', '-18px');
-      stageEl.style.setProperty('--focus-scale', '1.22');
     }
 
     authUiState.screenFocused = true;
@@ -1089,15 +1133,15 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
       activeKeydownCleanup = null;
     }
 
-    // ── TAHAP 1 (0ms – 450ms): Keluar dari Mode Fokus (layar kembali scale(1) di atas meja, blur hilang) ──
+    // ── TAHAP 1 (0ms – 400ms): Keluar dari Mode Fokus (layar kembali ke ukuran normal di atas meja, blur hilang) ──
     exitScreenFocusMode(true);
 
-    // ── TAHAP 2 (450ms – 1100ms): Logo SF StudioFlow muncul membesar halus di dalam layar laptop kecil ──
+    // ── TAHAP 2 (400ms – 1000ms): Logo SF StudioFlow muncul membesar halus di dalam layar laptop kecil ──
     const t2 = setTimeout(() => {
       stageEl?.classList.add('is-laptop-splash');
-    }, 450);
+    }, 400);
 
-    // ── TAHAP 3 (1100ms – 1700ms): Meja, bodi laptop & lampu memudar -> Layar penuh gelap polos #0F1114 dgn logo di tengah ──
+    // ── TAHAP 3 (1000ms – 1500ms): Meja, bodi laptop & lampu memudar -> Layar penuh gelap polos #0F1114 dgn logo di tengah ──
     const t3 = setTimeout(() => {
       const splashLockup = document.querySelector('#laptop-brand-splash .laptop-splash-lockup');
       let startTop = typeof window !== 'undefined' ? window.innerHeight / 2 : 360;
@@ -1147,9 +1191,9 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
         brandEl.style.top = '50%';
         brandEl.style.transform = 'translate(-50%, -50%) scale(1.18)';
       }
-    }, 1100);
+    }, 1000);
 
-    // ── TAHAP 4 (1700ms – 2400ms): Logo meluncur ke pojok kiri atas header sidebar & Dashboard terbuka ──
+    // ── TAHAP 4 (1500ms – 2150ms): Logo meluncur ke pojok kiri atas header sidebar & Dashboard terbuka ──
     const t4 = setTimeout(() => {
       resetAuthUiState(true); // pertahankan #cinematic-logo-overlay sementara meluncur ke pojok kiri atas
       onLoginSuccess(loggedUser, { cinematic: true });
@@ -1175,20 +1219,20 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
         brandEl.style.top = `${dockTop}px`;
         brandEl.style.transform = 'translate(0, 0) scale(0.96)';
       }
-    }, 1700);
+    }, 1500);
 
-    // Selesai (2400ms): hilangkan overlay mulus setelah logo menempel di pojok kiri atas
+    // Selesai (2150ms): hilangkan overlay mulus setelah logo menempel di pojok kiri atas
     const t5 = setTimeout(() => {
       const overlay = document.querySelector('#cinematic-logo-overlay');
       if (overlay) {
         overlay.classList.add('phase-done');
       }
       showToast(`Selamat datang, ${loggedUser.name} · Peran terdeteksi: ${loggedUser.role}`);
-    }, 2350);
+    }, 2150);
 
     const t6 = setTimeout(() => {
       cleanupCinematicOverlay();
-    }, 2600);
+    }, 2400);
 
     cinematicTimers.push(t2, t3, t4, t5, t6);
   };
