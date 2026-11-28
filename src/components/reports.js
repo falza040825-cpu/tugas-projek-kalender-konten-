@@ -120,25 +120,27 @@ function renderPlatformReport() {
         </div>
         <button type="button" class="btn-secondary" id="btn-export-platform" aria-label="Ekspor laporan platform">Ekspor (Demo)</button>
       </div>
-      <div class="report-platform-table">
-        <div class="report-table-head">
-          <span>PLATFORM</span>
-          <span>DIRENCANAKAN</span>
-          <span>SELESAI</span>
-          <span>TERLAMBAT</span>
-          <span>KETEPATAN WAKTU</span>
-        </div>
-        ${reportPlatformData.map(row => `
-          <div class="report-table-row">
-            <div class="report-cell-primary">
-              <span class="platform-chip plat-${row.platform.toLowerCase()}">${escapeHtml(row.platform)}</span>
-            </div>
-            <div data-label="Direncanakan">${progressBar(row.planned, maxPlanned, 'bar-lavender')}</div>
-            <div data-label="Selesai">${progressBar(row.done, row.planned, 'bar-sage')}</div>
-            <div data-label="Terlambat">${progressBar(row.late, row.planned, 'bar-blush')}</div>
-            <div data-label="Ketepatan">${rateRing(row.rate)}</div>
+      <div class="table-scroll-wrap">
+        <div class="report-platform-table">
+          <div class="report-table-head">
+            <span>PLATFORM</span>
+            <span>DIRENCANAKAN</span>
+            <span>SELESAI</span>
+            <span>TERLAMBAT</span>
+            <span>KETEPATAN WAKTU</span>
           </div>
-        `).join('')}
+          ${reportPlatformData.map(row => `
+            <div class="report-table-row">
+              <div class="report-cell-primary">
+                <span class="platform-chip plat-${row.platform.toLowerCase()}">${escapeHtml(row.platform)}</span>
+              </div>
+              <div data-label="Direncanakan">${progressBar(row.planned, maxPlanned, 'bar-lavender')}</div>
+              <div data-label="Selesai">${progressBar(row.done, row.planned, 'bar-sage')}</div>
+              <div data-label="Terlambat">${progressBar(row.late, row.planned, 'bar-blush')}</div>
+              <div data-label="Ketepatan">${rateRing(row.rate)}</div>
+            </div>
+          `).join('')}
+        </div>
       </div>
     </div>
   `;
@@ -155,26 +157,28 @@ function renderMemberReport() {
         </div>
         <button type="button" class="btn-secondary" id="btn-export-member" aria-label="Ekspor laporan anggota">Ekspor (Demo)</button>
       </div>
-      <div class="report-platform-table">
-        <div class="report-table-head">
-          <span>ANGGOTA</span>
-          <span>SELESAI</span>
-          <span>TEPAT WAKTU</span>
-          <span>TERLAMBAT</span>
-          <span>KETEPATAN WAKTU</span>
-        </div>
-        ${reportMemberData.map(row => `
-          <div class="report-table-row">
-            <div class="user-cell report-cell-primary">
-              <div class="activity-avatar ${row.avatarClass}" style="width:28px;height:28px;font-size:10px;">${escapeHtml(row.initials)}</div>
-              <strong style="font-size:12px;">${escapeHtml(row.name)}</strong>
-            </div>
-            <div data-label="Selesai">${progressBar(row.done, maxDone, 'bar-lavender')}</div>
-            <div data-label="Tepat waktu">${progressBar(row.ontime, row.done, 'bar-sage')}</div>
-            <div data-label="Terlambat">${progressBar(row.late, row.done, 'bar-blush')}</div>
-            <div data-label="Ketepatan">${rateRing(row.rate)}</div>
+      <div class="table-scroll-wrap">
+        <div class="report-platform-table">
+          <div class="report-table-head">
+            <span>ANGGOTA</span>
+            <span>SELESAI</span>
+            <span>TEPAT WAKTU</span>
+            <span>TERLAMBAT</span>
+            <span>KETEPATAN WAKTU</span>
           </div>
-        `).join('')}
+          ${reportMemberData.map(row => `
+            <div class="report-table-row">
+              <div class="user-cell report-cell-primary">
+                <div class="activity-avatar ${row.avatarClass}" style="width:28px;height:28px;font-size:10px;">${escapeHtml(row.initials)}</div>
+                <strong style="font-size:12px;">${escapeHtml(row.name)}</strong>
+              </div>
+              <div data-label="Selesai">${progressBar(row.done, maxDone, 'bar-lavender')}</div>
+              <div data-label="Tepat waktu">${progressBar(row.ontime, row.done, 'bar-sage')}</div>
+              <div data-label="Terlambat">${progressBar(row.late, row.done, 'bar-blush')}</div>
+              <div data-label="Ketepatan">${rateRing(row.rate)}</div>
+            </div>
+          `).join('')}
+        </div>
       </div>
     </div>
   `;

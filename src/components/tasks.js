@@ -124,16 +124,17 @@ function renderTaskTable(items, role) {
   }
 
   return `
-    <div class="task-table full-task-table">
-      <div class="table-head full-task-head">
-        <span>KONTEN / TUGAS</span>
-        <span>PLATFORM & KATEGORI</span>
-        <span>PENANGGUNG JAWAB</span>
-        <span>DEADLINE</span>
-        <span>PRIORITAS</span>
-        <span>STATUS</span>
-        <span>AKSI</span>
-      </div>
+    <div class="table-scroll-wrap">
+      <div class="task-table full-task-table">
+        <div class="table-head full-task-head">
+          <span>KONTEN / TUGAS</span>
+          <span>PLATFORM & KATEGORI</span>
+          <span>PENANGGUNG JAWAB</span>
+          <span>DEADLINE</span>
+          <span>PRIORITAS</span>
+          <span>STATUS</span>
+          <span>AKSI</span>
+        </div>
       ${items.map(item => {
         const isKetua = role === ROLES.KETUA_TIM;
         const actionLabel = role === ROLES.COPYWRITER
@@ -193,6 +194,7 @@ function renderTaskTable(items, role) {
         </div>
       `;
       }).join('')}
+      </div>
     </div>
   `;
 }

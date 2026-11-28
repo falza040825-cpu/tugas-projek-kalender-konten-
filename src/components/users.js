@@ -120,62 +120,64 @@ function renderUsersTable(currentUser) {
   const currentEmail = (currentUser?.email || '').toLowerCase();
 
   return `
-    <div class="users-table">
-      <div class="users-table-head">
-        <span>ANGGOTA</span>
-        <span>EMAIL TERDAFTAR</span>
-        <span>TUGAS / ROLE</span>
-        <span>BERGABUNG</span>
-        <span>STATUS</span>
-        <span>AKSI</span>
-      </div>
-      ${usersData.map(u => {
-        const isSelf = u.email.toLowerCase() === currentEmail;
-        const isPending = u.status === MEMBER_STATUSES.PENDING;
-        const displayName = isPending && (!u.name || u.isPendingName)
-          ? 'Belum Aktivasi Akun'
-          : u.name;
+    <div class="table-scroll-wrap">
+      <div class="users-table">
+        <div class="users-table-head">
+          <span>ANGGOTA</span>
+          <span>EMAIL TERDAFTAR</span>
+          <span>TUGAS / ROLE</span>
+          <span>BERGABUNG</span>
+          <span>STATUS</span>
+          <span>AKSI</span>
+        </div>
+        ${usersData.map(u => {
+          const isSelf = u.email.toLowerCase() === currentEmail;
+          const isPending = u.status === MEMBER_STATUSES.PENDING;
+          const displayName = isPending && (!u.name || u.isPendingName)
+            ? 'Belum Aktivasi Akun'
+            : u.name;
 
-        return `
-          <div class="users-table-row" data-member-email="${escapeHtml(u.email)}">
-            <div class="user-cell user-col-name">
-              <div class="activity-avatar ${u.avatarClass || 'av-sand'}">${escapeHtml(u.initials)}</div>
-              <div style="min-width:0;">
-                <strong style="${isPending ? 'color:var(--color-ink-secondary);font-style:italic;' : ''}">${escapeHtml(displayName)}</strong>
-                ${isSelf ? `<span class="user-self-tag">Anda</span>` : ''}
-                <div class="user-mobile-email cl-muted">${escapeHtml(u.email)}</div>
+          return `
+            <div class="users-table-row" data-member-email="${escapeHtml(u.email)}">
+              <div class="user-cell user-col-name">
+                <div class="activity-avatar ${u.avatarClass || 'av-sand'}">${escapeHtml(u.initials)}</div>
+                <div style="min-width:0;">
+                  <strong style="${isPending ? 'color:var(--color-ink-secondary);font-style:italic;' : ''}">${escapeHtml(displayName)}</strong>
+                  ${isSelf ? `<span class="user-self-tag">Anda</span>` : ''}
+                  <div class="user-mobile-email cl-muted">${escapeHtml(u.email)}</div>
+                </div>
+              </div>
+              <div class="cl-muted user-col-email"><code>${escapeHtml(u.email)}</code></div>
+              <div class="user-col-role">
+                <span class="role-pill ${ROLE_COLORS[u.role] || ''}">${escapeHtml(u.role)}</span>
+              </div>
+              <div class="cl-muted user-col-joined">${escapeHtml(u.joined)}</div>
+              <div class="user-col-status">
+                <span class="status-pill ${getStatusPillClass(u.status)}">${escapeHtml(u.status)}</span>
+              </div>
+              <div class="user-col-action team-row-actions">
+                <button
+                  type="button"
+                  class="btn-secondary user-edit-btn"
+                  data-uid="${escapeHtml(u.id)}"
+                  aria-label="Ubah role ${escapeHtml(u.email)}"
+                >
+                  Ubah Role
+                </button>
+                <button
+                  type="button"
+                  class="btn-secondary btn-danger-outline user-delete-btn"
+                  data-del-uid="${escapeHtml(u.id)}"
+                  ${isSelf ? 'disabled title="Akun Ketua Tim yang sedang login tidak dapat dihapus"' : ''}
+                  aria-label="Hapus anggota ${escapeHtml(u.email)}"
+                >
+                  Hapus
+                </button>
               </div>
             </div>
-            <div class="cl-muted user-col-email"><code>${escapeHtml(u.email)}</code></div>
-            <div class="user-col-role">
-              <span class="role-pill ${ROLE_COLORS[u.role] || ''}">${escapeHtml(u.role)}</span>
-            </div>
-            <div class="cl-muted user-col-joined">${escapeHtml(u.joined)}</div>
-            <div class="user-col-status">
-              <span class="status-pill ${getStatusPillClass(u.status)}">${escapeHtml(u.status)}</span>
-            </div>
-            <div class="user-col-action team-row-actions">
-              <button
-                type="button"
-                class="btn-secondary user-edit-btn"
-                data-uid="${escapeHtml(u.id)}"
-                aria-label="Ubah role ${escapeHtml(u.email)}"
-              >
-                Ubah Role
-              </button>
-              <button
-                type="button"
-                class="btn-secondary btn-danger-outline user-delete-btn"
-                data-del-uid="${escapeHtml(u.id)}"
-                ${isSelf ? 'disabled title="Akun Ketua Tim yang sedang login tidak dapat dihapus"' : ''}
-                aria-label="Hapus anggota ${escapeHtml(u.email)}"
-              >
-                Hapus
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('')}
+          `;
+        }).join('')}
+      </div>
     </div>
   `;
 }
@@ -183,29 +185,31 @@ function renderUsersTable(currentUser) {
 function renderRolesMatrix(currentRole) {
   const areas = Object.keys(AREA_LABELS);
   return `
-    <div class="roles-matrix">
-      <div class="matrix-head">
-        <div class="matrix-role-col">PERAN</div>
-        ${areas.map(a => `<div class="matrix-area-col">${AREA_LABELS[a]}</div>`).join('')}
-      </div>
-      ${rolesMatrix.map(row => {
-    const isCurrent = row.role === currentRole;
-    return `
-          <div class="matrix-row ${isCurrent ? 'matrix-row-active' : ''}">
-            <div class="matrix-role-cell">
-              <span class="role-pill ${ROLE_COLORS[row.role] || ''}">${escapeHtml(row.role)}</span>
-              ${isCurrent ? '<div style="font-size:9px;font-weight:700;color:var(--color-red);margin-top:2px;">AKTIF (SIMULASI)</div>' : ''}
-            </div>
-            ${areas.map(a => `
-              <div class="matrix-cell ${row[a] ? 'allowed' : 'denied'}">
-                <span class="matrix-icon" title="${row[a] ? 'Diizinkan' : 'Disembunyikan / Dibatasi'}">
-                  ${row[a] ? '✓' : '—'}
-                </span>
+    <div class="table-scroll-wrap">
+      <div class="roles-matrix">
+        <div class="matrix-head">
+          <div class="matrix-role-col">PERAN</div>
+          ${areas.map(a => `<div class="matrix-area-col">${AREA_LABELS[a]}</div>`).join('')}
+        </div>
+        ${rolesMatrix.map(row => {
+      const isCurrent = row.role === currentRole;
+      return `
+            <div class="matrix-row ${isCurrent ? 'matrix-row-active' : ''}">
+              <div class="matrix-role-cell">
+                <span class="role-pill ${ROLE_COLORS[row.role] || ''}">${escapeHtml(row.role)}</span>
+                ${isCurrent ? '<div style="font-size:9px;font-weight:700;color:var(--color-red);margin-top:2px;">AKTIF (SIMULASI)</div>' : ''}
               </div>
-            `).join('')}
-          </div>
-        `;
-  }).join('')}
+              ${areas.map(a => `
+                <div class="matrix-cell ${row[a] ? 'allowed' : 'denied'}">
+                  <span class="matrix-icon" title="${row[a] ? 'Diizinkan' : 'Disembunyikan / Dibatasi'}">
+                    ${row[a] ? '✓' : '—'}
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+    }).join('')}
+      </div>
     </div>
   `;
 }

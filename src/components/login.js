@@ -757,6 +757,8 @@ export function attachLoginEvents(onLoginSuccess, showToast, rerenderLogin) {
   const enterScreenFocusMode = () => {
     if (!authUiState.screenAwake || !authUiState.laptopOpen || authUiState.screenFocused) return;
     if (!stageEl || !lidEl) return;
+    // Nonaktifkan zoom-in pop-out pada layar HP (<= 768px) agar form tidak terpotong tepi layar
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) return;
 
     try {
       const rect = lidEl.getBoundingClientRect();

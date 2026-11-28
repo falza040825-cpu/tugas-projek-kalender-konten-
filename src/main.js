@@ -320,8 +320,16 @@ function handleLogout() {
 }
 
 function attachEventListeners() {
-  // Sidebar Expand / Collapse Toggle (Glassy Dock)
+  // Sidebar Expand / Collapse Toggle (Desktop) atau Tutup Drawer (Mobile <= 768px)
   const toggleCollapse = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 820) {
+      state.sidebarOpen = false;
+      document.querySelector('#sidebar')?.classList.remove('open');
+      const bd = document.querySelector('#sidebar-backdrop');
+      if (bd) bd.style.display = 'none';
+      return;
+    }
+
     state.sidebarCollapsed = !state.sidebarCollapsed;
     try {
       localStorage.setItem('ymq_sidebar_collapsed', String(state.sidebarCollapsed));

@@ -586,3 +586,4 @@ export function attachFloatingChatEvents(navigateTo, showToast) {
     }
   });
 }
+

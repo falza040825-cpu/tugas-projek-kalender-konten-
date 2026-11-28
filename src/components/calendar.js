@@ -135,9 +135,11 @@ function renderMonthly(items) {
       </div>
       <button type="button" class="cal-nav-btn" id="cal-next" aria-label="Bulan berikutnya">→</button>
     </div>
-    <div class="cal-grid-month">
-      ${headCells}
-      ${cells}
+    <div class="cal-scroll-wrap">
+      <div class="cal-grid-month">
+        ${headCells}
+        ${cells}
+      </div>
     </div>
   `;
 }
@@ -175,7 +177,9 @@ function renderWeekly(items) {
       <strong>${formatWeekLabel(base)}</strong>
       <button type="button" class="cal-nav-btn" id="cal-next" aria-label="Pekan berikutnya">→</button>
     </div>
-    <div class="cal-grid-week">${cols}</div>
+    <div class="cal-scroll-wrap">
+      <div class="cal-grid-week">${cols}</div>
+    </div>
   `;
 }
 
@@ -220,31 +224,33 @@ function renderContentList(items, role) {
     return `<div class="cal-empty-state">Tidak ada konten pada antrean <strong>${escapeHtml(role)}</strong> yang cocok dengan filter aktif.</div>`;
   }
   return `
-    <div class="content-list-table">
-      <div class="content-list-head">
-        <span>JUDUL KONTEN</span>
-        <span>PLATFORM</span>
-        <span>KATEGORI</span>
-        <span>TGL PRODUKSI</span>
-        <span>TGL TAYANG</span>
-        <span>STATUS</span>
-        <span>AKSI</span>
-      </div>
-      ${items.map(item => `
-        <div class="content-list-row">
-          <div class="content-list-title">${escapeHtml(item.title)}</div>
-          <div><span class="platform-chip plat-${item.platform.toLowerCase()}">${escapeHtml(item.platform)}</span></div>
-          <div class="cl-muted" data-label="Kategori">${escapeHtml(item.category)}</div>
-          <div class="cl-muted" data-label="Produksi">${escapeHtml(item.prodDate)}</div>
-          <div class="cl-muted ${item.isOverdue ? 'cl-late' : ''}" data-label="Tayang">${escapeHtml(item.pubDate)}</div>
-          <div><span class="status-pill ${item.statusClass}">${item.isOverdue ? '⚑ ' : ''}${escapeHtml(item.status)}</span></div>
-          <div>
-            <button type="button" class="btn-secondary" data-cal-id="${escapeHtml(item.id)}" style="padding:4px 10px;font-size:11px;">
-              ${role === ROLES.COPYWRITER ? 'Naskah' : role === ROLES.EDITOR ? 'Edit' : 'Detail'}
-            </button>
-          </div>
+    <div class="table-scroll-wrap">
+      <div class="content-list-table">
+        <div class="content-list-head">
+          <span>JUDUL KONTEN</span>
+          <span>PLATFORM</span>
+          <span>KATEGORI</span>
+          <span>TGL PRODUKSI</span>
+          <span>TGL TAYANG</span>
+          <span>STATUS</span>
+          <span>AKSI</span>
         </div>
-      `).join('')}
+        ${items.map(item => `
+          <div class="content-list-row">
+            <div class="content-list-title">${escapeHtml(item.title)}</div>
+            <div><span class="platform-chip plat-${item.platform.toLowerCase()}">${escapeHtml(item.platform)}</span></div>
+            <div class="cl-muted" data-label="Kategori">${escapeHtml(item.category)}</div>
+            <div class="cl-muted" data-label="Produksi">${escapeHtml(item.prodDate)}</div>
+            <div class="cl-muted ${item.isOverdue ? 'cl-late' : ''}" data-label="Tayang">${escapeHtml(item.pubDate)}</div>
+            <div><span class="status-pill ${item.statusClass}">${item.isOverdue ? '⚑ ' : ''}${escapeHtml(item.status)}</span></div>
+            <div>
+              <button type="button" class="btn-secondary" data-cal-id="${escapeHtml(item.id)}" style="padding:4px 10px;font-size:11px;">
+                ${role === ROLES.COPYWRITER ? 'Naskah' : role === ROLES.EDITOR ? 'Edit' : 'Detail'}
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
   `;
 }
