@@ -322,7 +322,7 @@ function handleLogout() {
 function attachEventListeners() {
   // Sidebar Expand / Collapse Toggle (Desktop) atau Tutup Drawer (Mobile <= 768px)
   const toggleCollapse = () => {
-    if (typeof window !== 'undefined' && window.innerWidth <= 820) {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
       state.sidebarOpen = false;
       document.querySelector('#sidebar')?.classList.remove('open');
       const bd = document.querySelector('#sidebar-backdrop');

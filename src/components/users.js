@@ -359,7 +359,7 @@ export function renderUsers() {
     `;
   }
 
-  const activeCount  = usersData.filter(u => u.status === MEMBER_STATUSES.ACTIVE).length;
+  const activeCount = usersData.filter(u => u.status === MEMBER_STATUSES.ACTIVE).length;
   const pendingCount = usersData.filter(u => u.status === MEMBER_STATUSES.PENDING).length;
 
   return `
